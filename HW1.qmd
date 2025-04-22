@@ -1,0 +1,220 @@
+---
+title: "Actividad Individual I"
+subtitle: "Ciencia de Datos con R"
+format: html
+editor: visual
+---
+
+## Introducción
+
+El objetivo de este trabajo es aplicar herramientas de **data wrangling** con `tidyverse` y realizar **visualizaciones** utilizando `ggplot2` y `plotly`.
+
+------------------------------------------------------------------------
+
+## Dataset: `gapminder` (incluido en `{gapminder}`)
+
+El dataset `gapminder` del paquete `{gapminder}` contiene datos de desarrollo mundial de los paises entre los años 1952 y 2007, con información de todos los continentes.
+
+### Variables principales:
+
+-   `country`: país
+-   `continent`: continente
+-   `year`: año de observación
+-   `lifeExp`: esperanza de vida
+-   `pop`: población
+-   `gdpPercap`: PBI per cápita
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(gapminder)
+library(ggmosaic)
+library(plotly)
+library(testthat)
+
+data(gapminder)
+```
+
+------------------------------------------------------------------------
+
+### 1. Data Wrangling
+
+1.1. Filtrar los países del continente asiático en el año 2007 con esperanza de vida mayor a 70 y PBI per cápita mayor a 5000; y luego calcula la mediana. Interprete el resultado. La mediana guardala en un nuevo objeto llamado `mediana`.
+
+```{r}
+#| label: ejercicio_11
+
+```
+
+1.2. Crear una nueva variable que represente el ingreso total (`gdpPercap * pop`) y visualizar la densidad del logaritmo de la variable creada. Obs: todo el proceso tiene que estar unido por pipes. Interprete la visualización obtenida. Guarde el gráfico en un objeto llamado `densidad_ingreso_total_log` y luego imprimalo.
+
+```{r}
+#| label: ejercicio_12
+
+```
+
+1.3. Crear un nuevo data frame con las variables `country`, `year` y una variable categórica de esperanza de vida (baja \<menos de 50 años\>, media \<entre 50 y menos de 70 años\>, alta \<70 años o más\>). Luego, realizar la tabla de frecuencias de la variable categórica y la visualización de dicha tabla. La tabla de frecuencias almacenala en un objeto llamado `freq_exp_country_year` y la visualización en un objeto llamado `plot_freq_exp_country_year`
+
+```{r}
+#| label: ejercicio_13
+
+
+```
+
+1.4. Usar `mutate(across())` para categorizar todas las variables numéricas en tres niveles: bajo, medio y alto. Observación: el objetivo es que cada categoria tenga aproximadamente las mismas cantidad de observaciones. El resultado debe ser un nuevo data.frame con las variables originales y las categorizadas. Guardar el nuevo data.frame en un objeto llamado `gapminder_cat`. Luego, visualizar la tabla de frecuencias de cada una de las variables categorizadas.
+
+```{r}
+#| label: ejercicio_14
+
+```
+
+1.5. Crear una variable `cat_pop` que clasifique los países según su población (`< 1 millón`, `1-10 millones`, `> 10 millones`). Remplaza el data.frame `gapminder_cat` por el nuevo data.frame que contiene la variable `cat_pop`.
+
+```{r}
+#| label: ejercicio_15
+
+
+```
+
+1.6. Seleccionar las variables que contengan la letra **c**. Luego, guardar el resultado en un nuevo objeto llamado `gapminder_c`.
+
+```{r}
+#| label: ejercicio_16
+
+
+```
+
+1.7. Calcular el promedio y la desviación estándar de `lifeExp` y `gdpPercap` por continente y década. Guardar el resultado en un nuevo objeto llamado `summary_exp_continet_decade`
+
+```{r}
+#| label: ejercicio_17
+
+
+```
+
+1.8. Mostrar los 10 países con mayor esperanza de vida en 2007 usando `dplyr`. Calcula la media de la variable `gdpPercap` para dichos paises y comparala con la media global de `gdpPercap` para el año 2007. Comentar los resuktados obtenidos. El resultado con los promedios debe ser un nuevo data.frame llamado `summary_top10_exp`
+
+```{r}
+#| label: ejercicio_18
+
+
+```
+
+1.9. Realizar un `left_join()` entre `gapminder` y el siguiente tibble. El resultado almacenalo en un nuevo objeto llamado `gapminder_join`.
+
+```{r}
+region_labels <- tibble(
+  continent = c("Africa", "Americas", "Asia", "Europe","Oceania"),
+  region = c("África", "Américas", "Asia", "Europa", "Oceanía"))
+```
+
+```{r}
+#| label: ejercicio_19
+
+
+```
+
+1.10. Mover la variable `pop` al inicio del dataset. El resultado almacenalo en un nuevo objeto llamado `gapminder_pop_first`.
+
+```{r}
+#| label: ejercicio_110
+
+```
+
+1.11. Extraer una muestra aleatoria de aproximadamente el 10% observaciones y comparar el promedio de `lifeExp` por continente con el de la base completa. El resultado de la muestra guardalo en `sample10_gapminder` Explicar de forma "intuitiva" porque existen diferencias
+
+```{r}
+#| label: ejercicio_111
+
+
+```
+
+1.12. Filtrar por el año 2007, crear una variable categórica de `gdpPercap` (al igual que lo realizado en el punto 1.4), agrupar por `continent` y categoría, y calcular el promedio de `lifeExp`. Guardar el resultado en un nuevo objeto llamado `summary_gdpPercap_lifeExp`.
+
+```{r}
+#| label: ejercicio_112
+
+
+```
+
+1.13. Estandarizar las variables `lifeExp`, `gdpPercap` y `pop` y luego calcular sus medias y desvíos estándar. Guardar el resultado en un nuevo objeto llamado `summary_estandarizado`.
+
+```{r}
+#| label: ejercicio_113
+
+
+```
+
+1.14. Calcular el cambio en esperanza de vida entre años (utilizar la función `lag`) para cada país y agrupar según si aumentó o no. Comparar el `gdpPercap` promedio en 2007 según esa clasificación. Guardar el resultado en un nuevo objeto llamado `summary_lifeExp_gdpPercap`.
+
+```{r}
+#| label: ejercicio_114
+
+```
+
+------------------------------------------------------------------------
+
+## 2. Visualizaciones
+
+Cada una de las visulizaciones debe tener: titulo, etiquetas en los ejes y todo aquello que consideres necesario para crear una buena visualización.
+
+2.1. Gráfico de dispersión entre `gdpPercap` y `lifeExp`, coloreado por `continent`. Interpretar los resultados obtenidos.
+
+```{r}
+#| label: ejercicio_21
+
+
+```
+
+2.2. Boxplot de `lifeExp` por continente. Interpretar los resultados obtenidos
+
+```{r}
+#| label: ejercicio_22
+```
+
+2.3. Facet wrap de `gdpPercap` según año.
+
+```{r}
+#| label: ejercicio_23
+```
+
+2.4. Versión interactiva con `ggplotly()` del diagrama de dispersión realizado en el punto 2.1.
+
+```{r}
+#| label: ejercicio_24
+
+```
+
+2.5. Violin plot de `gdpPercap` por continente.
+
+```{r}
+#| label: ejercicio_25
+
+```
+
+2.6. Gráfico de mosaico de `continent` contra una categoría derivada de `lifeExp` (por ejemplo: baja, media, alta).
+
+```{r}
+#| label: ejercicio_26
+
+
+```
+
+------------------------------------------------------------------------
+
+## Entrega
+
+-   **La fecha limite de entrega es el 30 de abril de 2025.**
+
+-   Las respuestas deben estar en este mismo archivo `.qmd`, el contenido deber ser completamente reproducible, es decir, cada chunk debe de funcionar sin errores para poder replicar los resultados.
+
+-   No se aceptan archivos `.Rmd` o `.R` para la entrega. Solamente subir al repositorio el archivo `.qmd` con las respuestas.
+
+-   Cada respuesta del ejercicio debe estar en el chunk correspondiente, no borrar la etiqueta del chunk `#| label: ejercicio_XX`.
+
+-   Puede realizar pasos intermedios los que sean necesarios dentro del chunk pero debe de respetar el nombre del objeto final en el caso que se indique.
+
+-   Los gráficos deben ser guardados en objetos y luego impresos en el caso que se indique que lo almacenen en un objeto. En el caso que no se indique, pueden ser impresos directamente.
+
+-   Para comenzar la tarea deben de ir al siguiente link: [GitHub Classroom](https://classroom.github.com/a/g-XM7vb1). Una vez allí les va a pedir que indiquen su cuenta de GitHub y luego les va a crear un repositorio en su cuenta. Una vez creado el repositorio, deben de clonar el repositorio en su computadora y abrirlo con RStudio.
+
+------------------------------------------------------------------------

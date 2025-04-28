@@ -42,7 +42,12 @@ data(gapminder)
 
 ```{r}
 #| label: ejercicio_11
+mediana <- gapminder %>%
+  filter(continent == "Asia", year == 2007, lifeExp > 70, gdpPercap > 5000) %>%
+  summarise(mediana = median(lifeExp)) %>%
+  pull(mediana)
 
+mediana
 ```
 
 1.2. Crear una nueva variable que represente el ingreso total (`gdpPercap * pop`) y visualizar la densidad del logaritmo de la variable creada. Obs: todo el proceso tiene que estar unido por pipes. Interprete la visualización obtenida. Guarde el gráfico en un objeto llamado `densidad_ingreso_total_log` y luego imprimalo.

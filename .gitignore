@@ -7,3 +7,6 @@
 # Ignore macOS system files
 .DS_Store
 .github/.DS_Store
+
+# Ignore R session history
+.Rhistory

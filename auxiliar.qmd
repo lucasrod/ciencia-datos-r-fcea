@@ -1,0 +1,102 @@
+---
+title: "Exploración Auxiliar de gapminder"
+subtitle: "Análisis complementario para interpretación de resultados"
+format: html
+editor: visual
+---
+
+## Introducción
+
+Este documento auxiliar permite realizar exploraciones adicionales sobre el dataset `gapminder`, facilitando la interpretación de resultados y la generación de visualizaciones complementarias.
+
+### Carga de librerías y datos
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(gapminder)
+library(ggplot2)
+library(plotly)
+data(gapminder)
+```
+
+------------------------------------------------------------------------
+
+## 1. Visualizar países que cumplen condiciones específicas
+
+Por ejemplo, para la pregunta 1 de la tarea principal:
+
+Filtrar los países asiáticos en 2007 con esperanza de vida mayor a 70 y PBI per cápita mayor a 5000:
+
+```{r}
+# Filtrar países según condición
+paises_filtrados <- gapminder %>%
+  filter(continent == "Asia", year == 2007, lifeExp > 70, gdpPercap > 5000)
+
+paises_filtrados %>% select(country, lifeExp, gdpPercap)
+```
+
+### Visualización: Scatterplot de Esperanza de Vida vs PBI per cápita
+
+```{r}
+# Calcular medianas
+mediana_lifeExp <- median(paises_filtrados$lifeExp)
+mediana_gdpPercap <- median(paises_filtrados$gdpPercap)
+
+# Scatterplot con leyenda interior de medianas y tendencia LOESS
+library(ggplot2)
+ggplot(paises_filtrados, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(color = 'blue', size = 5) +
+  geom_text(aes(label = country), nudge_y = 1, size = 5) +
+  geom_hline(aes(yintercept = mediana_lifeExp, color = "Mediana lifeExp"),
+             linewidth = 0.7, alpha = 0.5) +
+  geom_vline(aes(xintercept = mediana_gdpPercap, color = "Mediana gdpPercap"),
+             linewidth = 0.7, alpha = 0.5) +
+  geom_smooth(aes(color = "Tendencia LOESS"), method = "loess", se = TRUE, linewidth = 0.7, alpha = 0.5) +
+  labs(
+    title = "Países asiáticos en 2007\ncon lifeExp > 70 y gdpPercap > 5000",
+    x = "PBI per cápita",
+    y = "Esperanza de vida",
+    color = NULL) +
+  theme_minimal(base_size = 20) +
+  theme(
+    legend.position = c(0.85, 0.05),
+    legend.background = element_rect(fill = "white", color = "black", linewidth = 0.5)
+  )
+```
+
+### Versión interactiva
+
+```{r}
+# Interactive: replica de la gráfica estática con Plotly
+# Calcular medianas
+mediana_lifeExp <- median(paises_filtrados$lifeExp)
+mediana_gdpPercap <- median(paises_filtrados$gdpPercap)
+
+p <- ggplot(paises_filtrados, aes(x = gdpPercap, y = lifeExp, text = country)) +
+  geom_point(color = 'blue', size = 5) +
+  geom_hline(aes(yintercept = mediana_lifeExp, color = "Mediana lifeExp"), linewidth = 0.7, alpha = 0.5) +
+  geom_vline(aes(xintercept = mediana_gdpPercap, color = "Mediana gdpPercap"), linewidth = 0.7, alpha = 0.5) +
+  labs(
+    title = "Países asiáticos en 2007\ncon lifeExp > 70 y gdpPercap > 5000",
+    x = "PBI per cápita",
+    y = "Esperanza de vida",
+    color = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position.inside = c(0.95, 0.05),
+    legend.background = element_rect(fill = "white", color = "black", linewidth = 0.5)
+  )
+
+ggplotly(p, tooltip = "text") %>%
+  layout(legend = list(
+    x = 0.95, y = 0.05,
+    xanchor = "right", yanchor = "bottom",
+    bgcolor = "white", bordercolor = "black", borderwidth = 0.5
+  ))
+```
+
+------------------------------------------------------------------------
+
+## 2. Espacio para otras exploraciones
+
+Agrega aquí cualquier análisis o visualización adicional que te ayude a interpretar resultados o entender mejor el dataset.

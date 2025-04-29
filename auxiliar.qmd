@@ -16,12 +16,17 @@ library(tidyverse)
 library(gapminder)
 library(ggplot2)
 library(plotly)
+library(e1071)
+library(nortest)
+library(lmtest)
 data(gapminder)
+
+set.seed(42)  # reproducibilidad del muestreo
 ```
 
 ------------------------------------------------------------------------
 
-## 1. Visualizar países que cumplen condiciones específicas
+## 1. Países que cumplen condiciones específicas
 
 Por ejemplo, para la pregunta 1 de la tarea principal:
 
@@ -43,7 +48,6 @@ mediana_lifeExp <- median(paises_filtrados$lifeExp)
 mediana_gdpPercap <- median(paises_filtrados$gdpPercap)
 
 # Scatterplot con leyenda interior de medianas y tendencia LOESS
-library(ggplot2)
 ggplot(paises_filtrados, aes(x = gdpPercap, y = lifeExp)) +
   geom_point(color = 'blue', size = 5) +
   geom_text(aes(label = country), nudge_y = 1, size = 5) +
@@ -97,6 +101,265 @@ ggplotly(p, tooltip = "text") %>%
 
 ------------------------------------------------------------------------
 
-## 2. Espacio para otras exploraciones
+## Análisis exploratorio de la variable `lifeExp`
 
-Agrega aquí cualquier análisis o visualización adicional que te ayude a interpretar resultados o entender mejor el dataset.
+### Visualización de la distribución de `lifeExp`
+
+```{r}
+ggplot(gapminder, aes(x = lifeExp)) +
+  geom_density(fill = 'skyblue', color = 'darkred', alpha = 0.6, linewidth = 1) +
+  labs(
+    title = 'Densidad de la esperanza de vida (lifeExp)',
+    x = 'Esperanza de vida (lifeExp)',
+    y = 'Densidad'
+  ) +
+  theme_minimal()
+```
+
+### Test de normalidad para `lifeExp`
+
+```{r}
+# Tamaño de muestra utilizado para los tests
+tamano_muestra <- min(5000, length(gapminder$lifeExp))
+tamano_muestra
+
+# Test de Shapiro-Wilk (solo para n <= 5000)
+shapiro_test <- shapiro.test(sample(gapminder$lifeExp, tamano_muestra))
+shapiro_test
+
+# Test de Kolmogorov-Smirnov
+ks_test <- ks.test(scale(gapminder$lifeExp), "pnorm")
+ks_test
+
+# Test de Anderson-Darling
+ad_test <- ad.test(gapminder$lifeExp)
+ad_test
+```
+
+> **Tamaño de muestra utilizado:** Para ambos tests se utilizó una muestra de `r tamano_muestra` observaciones de la variable lifeExp.
+>
+> **Interpretación de los resultados:** - **Shapiro-Wilk normality test:** - Estadístico W = 0.95248, p-value \< 2.2e-16 - El p-valor extremadamente bajo indica que rechazamos la hipótesis nula de normalidad. Por tanto, la distribución de `lifeExp` no es normal (al menos para la muestra evaluada). - **Kolmogorov-Smirnov test:** - Estadístico D = 0.1049, p-value \< 2.2e-16 - También rechaza la hipótesis nula de normalidad para la variable estandarizada.
+>
+> -   **Anderson-Darling normality test:**
+>     -   Estadístico A = 28.009, p-value \< 2.2e-16
+>     -   El resultado refuerza la evidencia contra la normalidad, con un p-valor extremadamente bajo que indica una fuerte discrepancia respecto a la distribución normal, especialmente en las colas.
+
+```{r}
+# Q-Q plot
+par(mfrow = c(1, 2))
+qqnorm(gapminder$lifeExp, main = "QQ-plot de lifeExp")
+qqline(gapminder$lifeExp, col = "red")
+qqnorm(scale(gapminder$lifeExp), main = "QQ-plot de lifeExp estandarizada")
+qqline(scale(gapminder$lifeExp), col = "blue")
+par(mfrow = c(1, 1))
+
+kurtosis(gapminder$lifeExp)
+```
+
+> **Análisis visual (Q-Q plots):**\
+> En ambos gráficos (para `lifeExp` y su versión estandarizada) se observa una **curvatura en forma de S**, lo que indica que los datos se desvían sistemáticamente de la línea teórica que representaría una distribución normal. En particular: - En la cola inferior (cuantiles más bajos), los puntos están **por debajo** de la línea → hay más valores bajos de lo esperado bajo normalidad. - En la cola superior (cuantiles más altos), los puntos están **por encima** de la línea → hay más valores altos de lo esperado.
+>
+> Sin embargo, el **exceso de curtosis negativo** observado (−1.13) indica que la distribución es **platicúrtica**, es decir, tiene colas **más livianas** y una **menor concentración alrededor de la media** en comparación con una distribución normal. La forma de los Q-Q plots puede entonces explicarse por esta menor curtosis y una posible **asimetría leve**.
+>
+> **Conclusión:** Tanto los tests estadísticos como la evidencia visual aportada por los Q-Q plots indican de forma consistente que la variable `lifeExp` **no sigue una distribución normal**. Esto debe tenerse en cuenta al seleccionar métodos estadísticos posteriores, especialmente aquellos que asumen normalidad. Dado el exceso de curtosis negativo y la desviación en los cuantiles extremos, podrían considerarse métodos no paramétricos, transformaciones o enfoques robustos.
+
+## 2. Nueva variable `ingreso_total`
+
+```{r}
+# Crear variable ingreso_total y filtrar valores válidos
+aux_gapminder <- gapminder %>%
+  mutate(
+    ingreso_total = gdpPercap * pop,
+    log_ingreso_total = log(ingreso_total),
+    log_lifeExp = log(lifeExp)
+  ) %>%
+  filter(is.finite(log_ingreso_total), is.finite(log_lifeExp))
+```
+
+### Test de normalidad para `ingreso_total`
+
+```{r}
+# Tamaño de muestra utilizado para los tests
+tamano_muestra <- min(5000, length(aux_gapminder$ingreso_total))
+tamano_muestra
+
+# Test de Shapiro-Wilk (solo para n <= 5000)
+shapiro_test <- shapiro.test(sample(aux_gapminder$ingreso_total, tamano_muestra))
+shapiro_test
+
+# Test de Kolmogorov-Smirnov
+ks_test <- ks.test(scale(aux_gapminder$ingreso_total), "pnorm")
+ks_test
+
+# Test de Anderson-Darling
+ad_test <- ad.test(aux_gapminder$ingreso_total)
+ad_test
+
+# Q-Q plot
+par(mfrow = c(1, 2))
+qqnorm(aux_gapminder$ingreso_total, main = "QQ-plot de ingreso_total")
+qqline(aux_gapminder$ingreso_total, col = "red")
+qqnorm(scale(aux_gapminder$ingreso_total), main = "QQ-plot de ingreso_total estandarizada")
+qqline(scale(aux_gapminder$ingreso_total), col = "blue")
+par(mfrow = c(1, 1))
+
+kurtosis(aux_gapminder$ingreso_total)
+```
+
+> **Normalidad de la variable `ingreso_total`:**
+>
+> Se evaluó la normalidad de la variable `ingreso_total` mediante los tests de Shapiro-Wilk, Kolmogorov-Smirnov y Anderson-Darling, utilizando una muestra de `r tamano_muestra` observaciones. En todos los casos, el **p-valor fue menor a 2.2e-16**, lo que indica una **fuerte desviación respecto a la normalidad**. El valor extremadamente alto de curtosis (≈ 136) revela una distribución con colas extremadamente pesadas y fuerte asimetría, lo cual también se refleja en los Q-Q plots.
+>
+> Dado este comportamiento, se aplicó una **transformación logarítmica** a la variable. Esta transformación reduce la asimetría y la curtosis, acercando la distribución a la normalidad, como se observa en los nuevos Q-Q plots y puede corroborarse mediante nuevos tests de normalidad.
+
+### Test de normalidad para `log_ingreso_total` y `log_lifeExp`
+
+#### Tests para log_ingreso_total
+
+```{r}
+# Tamaño de muestra (máximo 5000) según log_ingreso_total
+tamano_muestra <- min(5000, nrow(aux_gapminder))
+tamano_muestra
+
+# Tests para log_ingreso_total
+
+# Shapiro-Wilk
+shapiro_log_ing <- shapiro.test(sample(aux_gapminder$log_ingreso_total, tamano_muestra))
+shapiro_log_ing
+
+# Kolmogorov-Smirnov
+ks_log_ing <- ks.test(scale(aux_gapminder$log_ingreso_total), "pnorm")
+ks_log_ing
+
+# Anderson-Darling
+ad_log_ing <- ad.test(aux_gapminder$log_ingreso_total)
+ad_log_ing
+
+# Curtosis
+curtosis_log_ing <- kurtosis(aux_gapminder$log_ingreso_total)
+cat("Curtosis (log_ingreso_total):", curtosis_log_ing, "\n")
+
+# Q-Q plots
+par(mfrow = c(1, 2))
+qqnorm(aux_gapminder$log_ingreso_total, main = "QQ-plot de log_ingreso_total")
+qqline(aux_gapminder$log_ingreso_total, col = "red")
+qqnorm(scale(aux_gapminder$log_ingreso_total), main = "QQ-plot de log_ingreso_total (est.)")
+qqline(scale(aux_gapminder$log_ingreso_total), col = "blue")
+par(mfrow = c(1, 1))
+```
+
+#### Tests para log_lifeExp
+
+```{r}
+# Shapiro-Wilk
+shapiro_log_life <- shapiro.test(sample(aux_gapminder$log_lifeExp, tamano_muestra))
+shapiro_log_life
+
+# Kolmogorov-Smirnov
+ks_log_life <- ks.test(scale(aux_gapminder$log_lifeExp), "pnorm")
+ks_log_life
+
+# Anderson-Darling
+ad_log_life <- ad.test(aux_gapminder$log_lifeExp)
+print(ad_log_life)
+
+# Curtosis
+curtosis_log_life <- kurtosis(aux_gapminder$log_lifeExp)
+cat("Curtosis (log_lifeExp):", curtosis_log_life, "\n")
+
+# Q-Q plots
+par(mfrow = c(1, 2))
+qqnorm(aux_gapminder$log_lifeExp, main = "QQ-plot de log_lifeExp")
+qqline(aux_gapminder$log_lifeExp, col = "red")
+qqnorm(scale(aux_gapminder$log_lifeExp), main = "QQ-plot de log_lifeExp (est.)")
+qqline(scale(aux_gapminder$log_lifeExp), col = "blue")
+par(mfrow = c(1, 1))
+```
+
+### 📈 Interpretación de las transformaciones de `lifeExp` e `ingreso_total`
+
+> **Transformación de `lifeExp`:**\
+> Aunque se aplicó la transformación logarítmica, los tests de normalidad (Shapiro-Wilk, Kolmogorov-Smirnov y Anderson-Darling) siguen rechazando la hipótesis de normalidad de `log_lifeExp` con p-valores \< 2.2e-16. Además, la curtosis solo pasó de -1.13 a -0.66, indicando una platicurtosis aún moderada. Visualmente, los Q-Q plots muestran que la transformación no alteró sustancialmente la forma o la tendencia de la distribución original. **Por tanto, en este caso, la transformación logarítmica no consiguió acercar `lifeExp` a la normalidad.**
+
+> **Transformación de `ingreso_total`:**\
+> En contraste, `ingreso_total` presentaba inicialmente una distribución extremadamente sesgada y leptocúrtica (curtosis ≈ 136), lo que fue confirmado por todos los tests de normalidad y los Q-Q plots.\
+> Tras aplicar la transformación logarítmica (`log_ingreso_total`), se observó una **mejora significativa**: - El p-valor del test de Shapiro-Wilk aumentó a 0.1131 (no se rechaza normalidad). - El Kolmogorov-Smirnov entregó un p-valor de 0.285 (no rechaza normalidad). - El Anderson-Darling aún rechaza marginalmente (p = 0.01964), pero con un estadístico mucho menor (A ≈ 0.92). - La curtosis (en exceso) bajó a -0.14, acercándose a la de una distribución normal.
+>
+> **Conclusión:** Mientras que la transformación logarítmica tuvo poco impacto sobre `lifeExp`, en `ingreso_total` logró corregir severas desviaciones, acercando la variable a una distribución normal. Este contraste ilustra la importancia de analizar caso por caso el efecto de las transformaciones.
+
+### Ajuste de modelo log-log y análisis de residuos
+
+```{r}
+# Ajustar regresión lineal simple
+modelo <- lm(log_lifeExp ~ log_ingreso_total, data = aux_gapminder)
+
+# Mostrar resumen del modelo
+summary(modelo)
+```
+
+> **Modelo ajustado:**  
+> Se ajustó un modelo de regresión lineal simple con `log_lifeExp` como variable dependiente y `log_ingreso_total` como variable independiente. El modelo resultante fue:
+> \[
+> \widehat{\log(\text{lifeExp})} = 2.392 + 0.070 \cdot \log(\text{ingreso\_total})
+> \]
+> donde ambos coeficientes resultaron altamente significativos (p-valor < 2.2e-16).
+
+> **Interpretación económica:**  
+> En este contexto log-log, el coeficiente de `log_ingreso_total` (≈ 0.07) representa una **elasticidad**: un aumento del 1% en el ingreso total se asocia, en promedio, con un aumento de aproximadamente **0.07% en la esperanza de vida**.
+
+> **Bondad de ajuste:**  
+> El modelo explica cerca del 38% de la variabilidad en `log_lifeExp` (R² = 0.3838), lo cual es moderado para datos agregados a nivel país-año, donde es esperable una gran heterogeneidad.
+
+```{r}
+# Normalidad de los residuos
+lillie_test <- lillie.test(residuals(modelo))
+lillie_test
+
+# Homocedasticidad: Test de Breusch-Pagan
+bptest(modelo)
+
+# Visualización de residuos
+par(mfrow = c(1, 2))
+plot(modelo$fitted.values, residuals(modelo),
+     main = "Residuos vs Ajustados", xlab = "Valores ajustados", ylab = "Residuos")
+abline(h = 0, lty = 2, col = 'red')
+qqnorm(residuals(modelo), main = "QQ-plot de residuos")
+qqline(residuals(modelo), col = 'blue')
+par(mfrow = c(1, 1))
+```
+
+> **Normalidad:**  
+> El test de Lilliefors (D = 0.0501, p < 1e-10) rechaza la normalidad de los residuos. Esto indica que, aunque la relación entre las variables es lineal en escala logarítmica, los residuos **no son perfectamente normales**.
+
+> **Homocedasticidad:**  
+> El test de Breusch-Pagan (BP = 68.25, p < 2.2e-16) también rechaza la hipótesis de homocedasticidad, indicando **presencia de heterocedasticidad**. Esto se confirma visualmente en el gráfico de "residuos vs ajustados", donde se aprecia una dispersión creciente.
+
+> **Visualización:**  
+> - El **gráfico de residuos vs valores ajustados** muestra un patrón de abanico, típico de heterocedasticidad.
+> - El **Q-Q plot de los residuos** revela desviaciones de la normalidad en las colas, consistentes con los resultados del test de Lilliefors.
+
+### Visualización de la relación entre log(ingreso_total) y log(lifeExp)
+
+```{r}
+# Visualizar la relación y la recta de regresión
+ggplot(aux_gapminder, aes(x = log_ingreso_total, y = log_lifeExp)) +
+  geom_point(alpha = 0.3, color = 'darkred') +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  labs(
+    title = "Relación entre log(ingreso_total) y log(lifeExp)",
+    x = "log(ingreso_total)",
+    y = "log(lifeExp)"
+  ) +
+  theme_minimal()
+```
+
+> El gráfico de dispersión entre `log_ingreso_total` y `log_lifeExp`, junto con la recta de regresión, confirma una relación **positiva y aproximadamente lineal** en la escala logarítmica. El uso del logaritmo mejora claramente la linealidad y permite interpretar la pendiente en términos de elasticidad.
+
+### Conclusión general de las transformaciones y el ajuste log-log
+
+- Existe una relación positiva y estadísticamente significativa entre el ingreso total y la esperanza de vida cuando ambas variables son logarítmicas.
+- El modelo capta una proporción moderada de la variabilidad, pero sus residuos presentan problemas de normalidad y homocedasticidad.
+- A pesar de estos problemas, el ajuste log-log es conceptualmente apropiado para capturar la relación económica subyacente. Para una modelización más rigurosa, se podría considerar:
+  - Uso de errores robustos (HC standard errors),
+  - Modelos de regresión robusta,
+  - O transformaciones adicionales para corregir la heterocedasticidad.

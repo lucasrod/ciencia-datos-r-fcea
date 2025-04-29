@@ -78,7 +78,33 @@ densidad_ingreso_total_log
 ```{r}
 #| label: ejercicio_13
 
+# Crear data frame con variable categórica de esperanza de vida
+exp_cat_df <- gapminder %>%
+  mutate(
+    exp_cat = case_when(
+      lifeExp < 50 ~ "baja",
+      lifeExp >= 50 & lifeExp < 70 ~ "media",
+      lifeExp >= 70 ~ "alta"
+    )
+  ) %>%
+  select(country, year, exp_cat)
 
+# Tabla de frecuencias
+freq_exp_country_year <- exp_cat_df %>%
+  count(exp_cat)
+
+# Visualización de la tabla de frecuencias
+library(ggplot2)
+plot_freq_exp_country_year <- ggplot(freq_exp_country_year, aes(x = exp_cat, y = n, fill = exp_cat)) +
+  geom_col(show.legend = FALSE, width = 0.6) +
+  labs(
+    title = "Frecuencia de categorías de esperanza de vida",
+    x = "Categoría de esperanza de vida",
+    y = "Frecuencia"
+  ) +
+  theme_minimal(base_size = 14)
+
+plot_freq_exp_country_year
 ```
 
 1.4. Usar `mutate(across())` para categorizar todas las variables numéricas en tres niveles: bajo, medio y alto. Observación: el objetivo es que cada categoria tenga aproximadamente las mismas cantidad de observaciones. El resultado debe ser un nuevo data.frame con las variables originales y las categorizadas. Guardar el nuevo data.frame en un objeto llamado `gapminder_cat`. Luego, visualizar la tabla de frecuencias de cada una de las variables categorizadas.

@@ -190,8 +190,33 @@ map(var_categoricas, ~gapminder_cat %>%
 
 ```{r}
 #| label: ejercicio_15
+#| 
+# Proceso de categorización por población:
+#
+# 1. Actualizar gapminder_cat manteniendo sus columnas y agregando cat_pop:
+#    - Usar mutate() sobre el data.frame existente
+#    - case_when() con umbrales de población en millones
+#    - Mantener el orden lógico: menor a mayor población
 
+# Actualizar data frame con nueva categorización de población
+gapminder_cat <- gapminder_cat %>%
+  mutate(
+    cat_pop = case_when(
+      pop < 1e6 ~ "< 1 millón",
+      pop >= 1e6 & pop <= 1e7 ~ "1-10 millones",
+      pop > 1e7 ~ "> 10 millones"
+    )
+  )
 
+# Visualizar distribución de categorías de población
+gapminder_cat %>%
+  count(cat_pop) %>%
+  mutate(prop = n/sum(n)) %>%
+  knitr::kable(
+    caption = "Distribución de países por categoría de población",
+    col.names = c("Categoría", "Frecuencia", "Proporción"),
+    digits = 3
+  )
 ```
 
 1.6. Seleccionar las variables que contengan la letra **c**. Luego, guardar el resultado en un nuevo objeto llamado `gapminder_c`.

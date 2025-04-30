@@ -332,7 +332,16 @@ region_labels <- tibble(
 ```{r}
 #| label: ejercicio_19
 
+# Realizar left join entre gapminder y region_labels
+gapminder_join <- gapminder %>%
+  left_join(region_labels, by = "continent")
 
+# Mostrar algunas filas del resultado
+gapminder_join %>%
+  group_by(region) %>%
+  slice(1) %>%  # Una fila por región
+  ungroup() %>%
+  knitr::kable(caption = "Una fila por región para ilustrar variedad")
 ```
 
 1.10. Mover la variable `pop` al inicio del dataset. El resultado almacenalo en un nuevo objeto llamado `gapminder_pop_first`.

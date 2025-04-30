@@ -126,6 +126,64 @@ plot_freq_exp_country_year
 ```{r}
 #| label: ejercicio_14
 
+# Explicación del proceso de categorización:
+#
+# 1. mutate(across()) permite aplicar una transformación a múltiples columnas:
+#    - .cols = where(is.numeric) selecciona todas las columnas numéricas
+#    - .fns define la función a aplicar (usando ~case_when para la categorización)
+#    - .names = "cat_{.col}" genera nuevos nombres con prefijo "cat_"
+#
+# 2. ntile(., 3) divide los datos en tres grupos de igual tamaño:
+#    - Asigna rangos y luego divide en terciles
+#    - Garantiza grupos balanceados (~33% de observaciones cada uno)
+#
+# 3. La estructura resultante tendrá:
+#    - Las variables originales intactas
+#    - Nuevas variables categorizadas con prefijo "cat_"
+
+# Crear data frame con variables originales y categorizadas
+gapminder_cat <- gapminder %>%
+  mutate(
+    across(
+      .cols = where(is.numeric),
+      .fns = ~case_when(
+        ntile(., 3) == 1 ~ "bajo",
+        ntile(., 3) == 2 ~ "medio",
+        ntile(., 3) == 3 ~ "alto"
+      ),
+      .names = "cat_{.col}"
+    )
+  )
+
+# Proceso de visualización de frecuencias:
+#
+# 1. Identificar variables categorizadas:
+#    - names(gapminder_cat) obtiene todos los nombres de columnas
+#    - startsWith(..., "cat_") filtra solo las que empiezan con "cat_"
+#    - Esto es necesario para separar las nuevas variables de las originales
+#
+# 2. Crear tablas de frecuencia usando map():
+#    - map() aplica la misma función a cada variable categórica
+#    - count() cuenta frecuencias por categoría
+#    - mutate() agrega nombre de variable y calcula proporciones
+#    - knitr::kable() formatea la tabla para mejor visualización
+
+# Obtener nombres de variables categorizadas
+var_categoricas <- names(gapminder_cat)[startsWith(names(gapminder_cat), "cat_")]
+
+# Crear tabla de frecuencias para cada variable
+map(var_categoricas, ~gapminder_cat %>%
+  count(.data[[.x]]) %>%
+  mutate(
+    variable = .x,
+    proporcion = n/sum(n)
+  ) %>%
+  knitr::kable(
+    caption = paste("Frecuencias para", .x),
+    col.names = c("Categoría", "Frecuencia", "Variable", "Proporción"),
+    digits = 3
+  )
+)
 ```
 
 1.5. Crear una variable `cat_pop` que clasifique los países según su población (`< 1 millón`, `1-10 millones`, `> 10 millones`). Remplaza el data.frame `gapminder_cat` por el nuevo data.frame que contiene la variable `cat_pop`.

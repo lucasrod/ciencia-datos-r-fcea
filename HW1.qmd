@@ -245,7 +245,33 @@ colnames(gapminder_c) %>%
 ```{r}
 #| label: ejercicio_17
 
+# Proceso de cálculo de estadísticas por grupo:
+#
+# 1. Crear variable década a partir de year:
+#    - floor(year/10)*10 redondea hacia abajo al inicio de década
+#
+# 2. Usar group_by() + summarise() para calcular estadísticas:
+#    - Agrupar por continente y década
+#    - Calcular media y desviación estándar para cada grupo
 
+# Calcular estadísticas por continente y década
+summary_exp_continet_decade <- gapminder %>%
+  mutate(decada = floor(year/10)*10) %>%
+  group_by(continent, decada) %>%
+  summarise(
+    lifeExp_mean = mean(lifeExp),
+    lifeExp_sd = sd(lifeExp),
+    gdpPercap_mean = mean(gdpPercap),
+    gdpPercap_sd = sd(gdpPercap),
+    .groups = "drop"
+  )
+
+# Mostrar resultados formateados
+knitr::kable(
+  summary_exp_continet_decade,
+  caption = "Estadísticas por continente y década",
+  digits = 2
+)
 ```
 
 1.8. Mostrar los 10 países con mayor esperanza de vida en 2007 usando `dplyr`. Calcula la media de la variable `gdpPercap` para dichos paises y comparala con la media global de `gdpPercap` para el año 2007. Comentar los resuktados obtenidos. El resultado con los promedios debe ser un nuevo data.frame llamado `summary_top10_exp`

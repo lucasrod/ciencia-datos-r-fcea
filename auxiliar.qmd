@@ -401,3 +401,46 @@ ggplot(prop_exp_time, aes(x = year, y = prop, fill = exp_cat)) +
 ```
 
 Este gráfico permite visualizar cómo la distribución de las categorías de esperanza de vida (baja, media, alta) evoluciona a lo largo del tiempo, facilitando la identificación de tendencias globales y transiciones demográficas en el conjunto de países analizados.
+
+------------------------------------------------------------------------
+
+## Análisis de tendencias temporales por continente
+
+### Evolución de la esperanza de vida por continente
+
+```{r}
+# Gráfico de esperanza de vida vs tiempo por continente
+ggplot(gapminder, aes(x = year, y = lifeExp, color = continent)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "loess", se = TRUE) +
+  labs(
+    title = "Evolución de la esperanza de vida por continente",
+    x = "Año",
+    y = "Esperanza de vida",
+    color = "Continente"
+  ) +
+  theme_minimal(base_size = 12) +
+  scale_color_brewer(palette = "Set2")
+```
+
+> Este gráfico muestra cómo la esperanza de vida ha evolucionado de manera diferente en cada continente. Las bandas sombreadas representan el intervalo de confianza de la tendencia LOESS, revelando tanto la tendencia central como la variabilidad en cada región.
+
+### Evolución del PBI per cápita por continente
+
+```{r}
+# Gráfico de PBI per cápita vs tiempo por continente
+ggplot(gapminder, aes(x = year, y = gdpPercap, color = continent)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "loess", se = TRUE) +
+  labs(
+    title = "Evolución del PBI per cápita por continente",
+    x = "Año",
+    y = "PBI per cápita",
+    color = "Continente"
+  ) +
+  theme_minimal(base_size = 12) +
+  scale_color_brewer(palette = "Set2") +
+  scale_y_continuous(labels = scales::dollar_format())
+```
+
+> La visualización del PBI per cápita revela patrones distintos de crecimiento económico entre continentes. Las tendencias suavizadas LOESS y sus intervalos de confianza permiten apreciar tanto la magnitud como la variabilidad del desarrollo económico en cada región.

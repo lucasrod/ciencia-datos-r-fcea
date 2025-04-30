@@ -146,11 +146,13 @@ gapminder_cat <- gapminder %>%
   mutate(
     across(
       .cols = where(is.numeric),
-      .fns = ~case_when(
-        ntile(., 3) == 1 ~ "bajo",
-        ntile(., 3) == 2 ~ "medio",
-        ntile(., 3) == 3 ~ "alto"
-      ),
+      .fns = ~{
+        breaks <- quantile(., probs = c(0, 1/3, 2/3, 1))
+        cut(., 
+            breaks = breaks,
+            labels = c("bajo", "medio", "alto"),
+            include.lowest = TRUE)
+      },
       .names = "cat_{.col}"
     )
   )
@@ -171,19 +173,35 @@ gapminder_cat <- gapminder %>%
 # Obtener nombres de variables categorizadas
 var_categoricas <- names(gapminder_cat)[startsWith(names(gapminder_cat), "cat_")]
 
-# Crear tabla de frecuencias para cada variable
-map(var_categoricas, ~gapminder_cat %>%
-  count(.data[[.x]]) %>%
+# Crear tabla de frecuencias con rangos para cada variable
+walk(var_categoricas, ~{
+  # Obtener nombre de la variable original (sin el prefijo cat_)
+  var_original <- sub("cat_", "", .x)
+  
+  # Crear tabla de frecuencias con rangos por categoría
+  gapminder_cat %>%
+    group_by(.data[[.x]]) %>%
+    summarise(
+      categoria = first(.data[[.x]]),
+      n = n(),
+      valor_min = min(.data[[var_original]]),
+      valor_max = max(.data[[var_original]]),
+      .groups = "drop"
+    ) %>%
+  arrange(valor_min) %>%  # Ordenar por valor mínimo
   mutate(
-    variable = .x,
-    proporcion = n/sum(n)
+    proporcion = n/sum(n),
+    minimo = valor_min,
+    maximo = valor_max
   ) %>%
+  select(categoria, n, proporcion, minimo, maximo) %>%
   knitr::kable(
-    caption = paste("Frecuencias para", .x),
-    col.names = c("Categoría", "Frecuencia", "Variable", "Proporción"),
+    caption = paste("Frecuencias y rangos para", var_original),
+    col.names = c("Categoría", "Frecuencia", "Proporción", "Mínimo", "Máximo"),
     digits = 3
-  )
-)
+  ) %>%
+  print()
+})
 ```
 
 1.5. Crear una variable `cat_pop` que clasifique los países según su población (`< 1 millón`, `1-10 millones`, `> 10 millones`). Remplaza el data.frame `gapminder_cat` por el nuevo data.frame que contiene la variable `cat_pop`.

@@ -78,6 +78,20 @@ densidad_ingreso_total_log
 ```{r}
 #| label: ejercicio_13
 
+# Proceso de categorización y visualización:
+#
+# 1. case_when() categoriza lifeExp en tres niveles usando puntos de corte fijos:
+#    - baja: < 50 años
+#    - media: entre 50 y 70 años
+#    - alta: >= 70 años
+#
+# 2. count(exp_cat) genera la tabla de frecuencias requerida
+#
+# 3. ggplot crea gráfico de barras con:
+#    - altura = frecuencia (n)
+#    - color = categoría (exp_cat)
+#    - estética minimalista (sin leyenda, ancho 0.6)
+
 # Crear data frame con variable categórica de esperanza de vida
 exp_cat_df <- gapminder %>%
   mutate(

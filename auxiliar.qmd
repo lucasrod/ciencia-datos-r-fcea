@@ -19,6 +19,7 @@ library(plotly)
 library(e1071)
 library(nortest)
 library(lmtest)
+library(ggrepel)
 data(gapminder)
 
 set.seed(42)  # reproducibilidad del muestreo
@@ -444,3 +445,61 @@ ggplot(gapminder, aes(x = year, y = gdpPercap, color = continent)) +
 ```
 
 > La visualización del PBI per cápita revela patrones distintos de crecimiento económico entre continentes. Las tendencias suavizadas LOESS y sus intervalos de confianza permiten apreciar tanto la magnitud como la variabilidad del desarrollo económico en cada región.
+
+### Relación entre esperanza de vida y PIB per cápita (2007)
+
+```{r}
+# Identificar top 10 países por esperanza de vida en 2007
+top10_2007 <- gapminder %>%
+  filter(year == 2007) %>%
+  arrange(desc(lifeExp)) %>%
+  slice_head(n = 10) %>%
+  mutate(is_top10 = TRUE)
+
+# Preparar datos para visualización
+data_2007 <- gapminder %>%
+  filter(year == 2007) %>%
+  left_join(select(top10_2007, country, is_top10), by = "country") %>%
+  mutate(
+    is_top10 = replace_na(is_top10, FALSE),
+    label = if_else(is_top10, country, NA_character_)
+  )
+
+# Crear gráfico
+ggplot(data_2007, aes(x = gdpPercap, y = lifeExp)) +
+  # Puntos base
+  geom_point(aes(color = is_top10, size = is_top10, alpha = is_top10)) +
+  # Etiquetas para top 10
+  geom_text_repel(
+    aes(label = label),
+    nudge_x = 0.05,
+    size = 3,
+    segment.color = "grey50"
+  ) +
+  # Línea de tendencia
+  geom_smooth(method = "lm", color = "grey30", se = FALSE) +
+  # Configuración estética
+  scale_color_manual(
+    values = c("FALSE" = "grey70", "TRUE" = "#e41a1c")
+  ) +
+  scale_size_manual(
+    values = c("FALSE" = 2, "TRUE" = 3)
+  ) +
+  scale_alpha_manual(
+    values = c("FALSE" = 0.5, "TRUE" = 1)
+  ) +
+  scale_x_log10(labels = scales::dollar_format()) +
+  labs(
+    title = "Relación entre PIB per cápita y esperanza de vida (2007)",
+    subtitle = "Destacando los 10 países con mayor esperanza de vida",
+    x = "PIB per cápita (escala logarítmica)",
+    y = "Esperanza de vida"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "none",
+    plot.subtitle = element_text(color = "grey40")
+  )
+```
+
+> Esta visualización muestra la relación entre PIB per cápita y esperanza de vida en 2007, destacando en rojo los 10 países con mayor esperanza de vida. Los países del top 10 tienden a concentrarse en la parte superior derecha del gráfico, confirmando la asociación entre alto desarrollo económico y mayor longevidad.

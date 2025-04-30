@@ -279,8 +279,47 @@ knitr::kable(
 ```{r}
 #| label: ejercicio_18
 
+# Proceso de análisis:
+#
+# 1. Filtrar datos de 2007 y obtener top 10 por lifeExp
+# 2. Calcular media de gdpPercap para:
+#    - Los 10 países con mayor esperanza de vida
+#    - Todos los países en 2007 (media global)
 
+# Obtener top 10 países por esperanza de vida en 2007
+top10_2007 <- gapminder %>%
+  filter(year == 2007) %>%
+  arrange(desc(lifeExp)) %>%
+  slice_head(n = 10) %>%
+  select(country, lifeExp, gdpPercap)
+
+# Calcular medias y crear data frame resumen
+summary_top10_exp <- gapminder %>%
+  filter(year == 2007) %>%
+  summarise(
+    gdp_mean_global = mean(gdpPercap),
+    gdp_mean_top10 = mean(top10_2007$gdpPercap),
+    diff_porcentual = (gdp_mean_top10 - gdp_mean_global) / gdp_mean_global * 100
+  )
+
+# Mostrar top 10 países
+knitr::kable(
+  top10_2007,
+  caption = "10 países con mayor esperanza de vida en 2007",
+  col.names = c("País", "Esperanza de vida", "PIB per cápita"),
+  digits = c(0, 2, 2)
+)
+
+# Mostrar comparación de medias
+knitr::kable(
+  summary_top10_exp,
+  caption = "Comparación de PIB per cápita: Top 10 vs Global (2007)",
+  col.names = c("Media global", "Media top 10", "Diferencia %"),
+  digits = 2
+)
 ```
+
+**Análisis de resultados** Los 10 países con mayor esperanza de vida en 2007 tienen un PIB per cápita 186.4% superior a la media global. Esto sugiere una fuerte relación positiva entre el desarrollo económico y la longevidad de la población.
 
 1.9. Realizar un `left_join()` entre `gapminder` y el siguiente tibble. El resultado almacenalo en un nuevo objeto llamado `gapminder_join`.
 

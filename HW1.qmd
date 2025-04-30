@@ -223,8 +223,21 @@ gapminder_cat %>%
 
 ```{r}
 #| label: ejercicio_16
+# Proceso de selección de variables:
+#
+# 1. Usar select() con matches():
+#    - matches() busca patrones en nombres de columnas
+#    - (?i)c hace la búsqueda insensible a mayúsculas/minúsculas
+#    - Incluye tanto "c" como "C" en cualquier posición
 
+# Seleccionar variables que contengan 'c' o 'C'
+gapminder_c <- gapminder_cat %>%
+  select(matches("(?i)c"))
 
+# Mostrar nombres de variables seleccionadas
+colnames(gapminder_c) %>%
+  paste(collapse = ", ") %>%
+  cat("Variables seleccionadas:\n", ., "\n")
 ```
 
 1.7. Calcular el promedio y la desviación estándar de `lifeExp` y `gdpPercap` por continente y década. Guardar el resultado en un nuevo objeto llamado `summary_exp_continet_decade`

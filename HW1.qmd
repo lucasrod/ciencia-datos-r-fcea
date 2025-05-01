@@ -375,7 +375,12 @@ gapminder_join %>%
 gapminder_pop_first <- gapminder %>%
   select(pop, everything())
 
-head(gapminder_pop_first)
+gapminder_pop_first %>%
+  head() %>%
+  knitr::kable(
+    caption = "Primeras filas del dataset con 'pop' como primera columna",
+    digits = 2
+  )
 ```
 
 1.11. Extraer una muestra aleatoria de aproximadamente el 10% observaciones y comparar el promedio de `lifeExp` por continente con el de la base completa. El resultado de la muestra guardalo en `sample10_gapminder` Explicar de forma "intuitiva" porque existen diferencias

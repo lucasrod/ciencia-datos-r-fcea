@@ -32,6 +32,8 @@ library(plotly)
 library(testthat)
 
 data(gapminder)
+
+set.seed(42)  # reproducibilidad del muestreo
 ```
 
 ------------------------------------------------------------------------
@@ -377,8 +379,40 @@ head(gapminder_pop_first)
 ```{r}
 #| label: ejercicio_111
 
+# Extraer muestra aleatoria del 10%
+sample10_gapminder <- gapminder %>%
+  slice_sample(prop = 0.1)
+
+# Calcular promedio de lifeExp por continente en la muestra y contar observaciones
+sample_avg <- sample10_gapminder %>%
+  group_by(continent) %>%
+  summarise(
+    lifeExp_mean_sample = mean(lifeExp),
+    sample_size = n()
+  )
+
+# Calcular promedio de lifeExp por continente en la base completa y contar observaciones
+complete_avg <- gapminder %>%
+  group_by(continent) %>%
+  summarise(
+    lifeExp_mean_complete = mean(lifeExp),
+    complete_size = n()
+  )
+
+# Unir los resultados para comparar
+comparison <- sample_avg %>%
+  left_join(complete_avg, by = "continent") %>%
+  mutate(difference = lifeExp_mean_sample - lifeExp_mean_complete) %>%
+  # Reorganizar columnas para mejor visualización
+  select(continent, complete_size, lifeExp_mean_complete, sample_size, lifeExp_mean_sample, difference)
+
+# Mostrar la comparación
+comparison %>%
+  knitr::kable(caption = "Comparación de esperanza de vida promedio por continente: muestra vs. base completa (con tamaños de muestra)")
 
 ```
+
+> Las diferencias entre la muestra (10%) y la base completa en esperanza de vida por continente se deben al tamaño reducido de la muestra, la aleatoriedad del muestreo, posibles sesgos o valores atípicos, y la baja representación de algunos continentes, lo que aumenta la variabilidad y aleja los promedios muestrales de los verdaderos.
 
 1.12. Filtrar por el año 2007, crear una variable categórica de `gdpPercap` (al igual que lo realizado en el punto 1.4), agrupar por `continent` y categoría, y calcular el promedio de `lifeExp`. Guardar el resultado en un nuevo objeto llamado `summary_gdpPercap_lifeExp`.
 

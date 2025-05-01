@@ -136,12 +136,12 @@ plot_freq_exp_country_year
 #
 # 1. mutate(across()) permite aplicar una transformación a múltiples columnas:
 #    - .cols = where(is.numeric) selecciona todas las columnas numéricas
-#    - .fns define la función a aplicar (usando ~case_when para la categorización)
+#    - .fns define la función a aplicar (usando cut() para la categorización)
 #    - .names = "cat_{.col}" genera nuevos nombres con prefijo "cat_"
 #
-# 2. ntile(., 3) divide los datos en tres grupos de igual tamaño:
-#    - Asigna rangos y luego divide en terciles
-#    - Garantiza grupos balanceados (~33% de observaciones cada uno)
+# 2. cut(..., breaks = quantile(...)) divide los valores en tres niveles:
+#    - Usa los cuantiles (33% y 66%) como puntos de corte
+#    - Las categorías resultantes son "bajo", "medio" y "alto"
 #
 # 3. La estructura resultante tendrá:
 #    - Las variables originales intactas
@@ -434,10 +434,11 @@ comparison %>%
 
 summary_gdpPercap_lifeExp <- gapminder %>%
   filter(year == 2007) %>%
-  mutate(gdpPercap_cat = case_when(
-    ntile(gdpPercap, 3) == 1 ~ "bajo",
-    ntile(gdpPercap, 3) == 2 ~ "medio",
-    ntile(gdpPercap, 3) == 3 ~ "alto"
+  mutate(gdpPercap_cat = cut(
+    gdpPercap,
+    breaks = quantile(gdpPercap, probs = c(0, 1/3, 2/3, 1), na.rm = TRUE),
+    labels = c("bajo", "medio", "alto"),
+    include.lowest = TRUE
   )) %>%
   group_by(continent, gdpPercap_cat) %>%
   summarise(lifeExp_mean = mean(lifeExp), .groups = "drop")

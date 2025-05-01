@@ -52,6 +52,8 @@ mediana <- gapminder %>%
 mediana
 ```
 
+> La mediana de 76.6 años refleja la esperanza de vida típica entre los países asiáticos que en 2007, tenían `lifeExp > 70` y `gdpPercap > 5000`. No representa a toda Asia, sino solo a este subconjunto de paises, por lo que debe interpretarse como un valor central condicionado por esos criterios.
+
 1.2. Crear una nueva variable que represente el ingreso total (`gdpPercap * pop`) y visualizar la densidad del logaritmo de la variable creada. Obs: todo el proceso tiene que estar unido por pipes. Interprete la visualización obtenida. Guarde el gráfico en un objeto llamado `densidad_ingreso_total_log` y luego imprimalo.
 
 ```{r}
@@ -74,6 +76,8 @@ densidad_ingreso_total_log <- gapminder %>%
 
 densidad_ingreso_total_log
 ```
+
+> La curva de densidad del logaritmo del ingreso total muestra que la mayoría de los países están concentrados entre valores logarítmicos de 23 y 24, es decir, ingresos totales de aproximadamente 10 a 30 miles de millones. La cola hacia la derecha indica que hay unos pocos países con grandes economías y/o muy poblados que concentran ingresos más altos que el resto. La transformación logarítmica reduce la dispersión y permite observar mejor la estructura central de la distribución, que en escala lineal quedaría opacada por los valores extremos. Este tipo de transformaciones es habitual en economía y análisis de datos, especialmente cuando se trabaja con variables altamente asimétricas o con outliers.
 
 1.3. Crear un nuevo data frame con las variables `country`, `year` y una variable categórica de esperanza de vida (baja \<menos de 50 años\>, media \<entre 50 y menos de 70 años\>, alta \<70 años o más\>). Luego, realizar la tabla de frecuencias de la variable categórica y la visualización de dicha tabla. La tabla de frecuencias almacenala en un objeto llamado `freq_exp_country_year` y la visualización en un objeto llamado `plot_freq_exp_country_year`
 
@@ -294,7 +298,7 @@ knitr::kable(
 )
 ```
 
-1.8. Mostrar los 10 países con mayor esperanza de vida en 2007 usando `dplyr`. Calcula la media de la variable `gdpPercap` para dichos paises y comparala con la media global de `gdpPercap` para el año 2007. Comentar los resuktados obtenidos. El resultado con los promedios debe ser un nuevo data.frame llamado `summary_top10_exp`
+1.8. Mostrar los 10 países con mayor esperanza de vida en 2007 usando `dplyr`. Calcula la media de la variable `gdpPercap` para dichos paises y comparala con la media global de `gdpPercap` para el año 2007. Comentar los resultados obtenidos. El resultado con los promedios debe ser un nuevo data.frame llamado `summary_top10_exp`
 
 ```{r}
 #| label: ejercicio_18
@@ -339,7 +343,7 @@ knitr::kable(
 )
 ```
 
-**Análisis de resultados** Los 10 países con mayor esperanza de vida en 2007 tienen un PIB per cápita 186.4% superior a la media global. Esto sugiere una fuerte relación positiva entre el desarrollo económico y la longevidad de la población.
+> **Análisis de resultados** Los 10 países con mayor esperanza de vida en 2007 tienen un PIB per cápita 186.4% superior a la media global. Esto sugiere una fuerte relación positiva entre el desarrollo económico y la longevidad de la población.
 
 1.9. Realizar un `left_join()` entre `gapminder` y el siguiente tibble. El resultado almacenalo en un nuevo objeto llamado `gapminder_join`.
 

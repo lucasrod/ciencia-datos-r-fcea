@@ -427,8 +427,24 @@ comparison %>%
 
 ```{r}
 #| label: ejercicio_112
+# Filtrar por el año 2007
+# Crear variable categórica de gdpPercap (bajo, medio, alto) usando ntile
+# Agrupar por continent y categoría de gdpPercap
+# Calcular promedio de lifeExp
 
+summary_gdpPercap_lifeExp <- gapminder %>%
+  filter(year == 2007) %>%
+  mutate(gdpPercap_cat = case_when(
+    ntile(gdpPercap, 3) == 1 ~ "bajo",
+    ntile(gdpPercap, 3) == 2 ~ "medio",
+    ntile(gdpPercap, 3) == 3 ~ "alto"
+  )) %>%
+  group_by(continent, gdpPercap_cat) %>%
+  summarise(lifeExp_mean = mean(lifeExp), .groups = "drop")
 
+# Mostrar el resultado
+summary_gdpPercap_lifeExp %>%
+  knitr::kable(caption = "Promedio de esperanza de vida por continente y categoría de PIB per cápita (2007)")
 ```
 
 1.13. Estandarizar las variables `lifeExp`, `gdpPercap` y `pop` y luego calcular sus medias y desvíos estándar. Guardar el resultado en un nuevo objeto llamado `summary_estandarizado`.

@@ -774,7 +774,7 @@ g2 <- gapminder %>%
 g2
 ```
 
----
+------------------------------------------------------------------------
 
 ## ✅ Alternativa 4: **Evolución de toda la distribución — faceteado por año + violines**
 
@@ -854,9 +854,9 @@ g2 <- gapminder %>%
 g2
 ```
 
----
+------------------------------------------------------------------------
 
-## ✅ **Alternativa 6: Diagrama de violín facetado por año (horizontal, sin continentes)**
+## ✅ **Alternativa 6: Diagrama de violín facetado por año (sin continentes)**
 
 ```{r}
 #| label: ejercicio_23_violin
@@ -893,4 +893,3 @@ g2 <- gapminder %>%
 g1
 g2
 ```
-

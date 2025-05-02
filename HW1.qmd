@@ -581,10 +581,101 @@ ggplot(gapminder, aes(x = factor(continent, levels = continents_ordered), y = li
 
 2.3. Facet wrap de `gdpPercap` según año.
 
+En vez de tener que elegir un solo tipo de gráfico, probé cuatro enfoques que iluminan la misma historia desde ángulos distintos:
+
+1.  **Violines facetados (escala log)** *Cumple la consigna palabra por palabra* y atenúa el efecto de los outliers.\
+2.  **Histogramas facetados (escala log)** Mismo paneo temporal, pero sin separar por continente. Ideal para ver el desplazamiento global de la masa hacia la derecha.
+3.  **Áreas apiladas** Muestra cómo se reparte el *PIB mundial* entre continentes.
+
+> *Tip*: el área se calcula con `ingreso_total = gdpPercap * pop`, así cada país aporta su parte según población×PIB per cápita.
+
+4.  **Serie temporal de la mediana** Una línea por continente con la mediana anual de `gdpPercap` (escala original para lectura rápida).
+
 ```{r}
 #| label: ejercicio_23
-#| 
+
+# ---- 1) Violines facetados por año (log) ----
+g_violin <- gapminder %>%
+  ggplot(aes(x = continent, y = gdpPercap, fill = continent)) +
+  geom_violin(scale = "width", draw_quantiles = c(0.25, 0.5, 0.75), alpha = 0.6) +
+  scale_y_log10(labels = scales::label_log()) +
+  facet_wrap(~year, ncol = 4) +
+  labs(
+    title = "Distribución del PIB per cápita por continente en cada año",
+    subtitle = "Escala logarítmica para evitar distorsión por outliers",
+    x = "Continente",
+    y = "PIB per cápita (USD, log escala)",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+# ---- 2) Histogramas facetados por año (log) ----
+g_hist <- gapminder %>%
+  ggplot(aes(x = log10(gdpPercap))) +
+  geom_histogram(bins = 25, fill = "steelblue", color = "white", alpha = 0.8) +
+  scale_x_log10(labels = scales::label_log()) +
+  facet_wrap(~ year, ncol = 4) +
+  labs(
+    title = "Distribución del PIB per cápita (escala log) por año",
+    subtitle = "Distribución global sin separar continentes",
+    x = "PIB per cápita (escala log)",
+    y = "Frecuencia"
+  ) +
+  theme_minimal()
+
+# ---- 3) Área apilada: proporción del PIB mundial por continente ----
+g_area <- gapminder %>%
+  mutate(ingreso_total = gdpPercap * pop) %>%
+  group_by(year, continent) %>%
+  summarise(ingreso = sum(ingreso_total), .groups = "drop") %>%
+  group_by(year) %>%
+  mutate(prop = ingreso / sum(ingreso)) %>%
+  ggplot(aes(x = year, y = prop, fill = continent)) +
+  geom_area(alpha = 0.8) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Proporción del PIB mundial aportado por continente",
+    x = "Año",
+    y = "Participación (%)",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes
+
+# ---- 4) Línea de la mediana de gdpPercap por continente ----
+g_median <- gapminder %>%
+  group_by(year, continent) %>%
+  summarise(median_gdp = median(gdpPercap), .groups = "drop") %>%
+  ggplot(aes(x = year, y = median_gdp, color = continent)) +
+  geom_line(size = 1) +
+  geom_point(size = 1.5) +
+  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  labs(
+    title = "Evolución de la mediana del PIB per cápita por continente",
+    x = "Año",
+    y = "Mediana del PIB per cápita (USD)",
+    color = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_continentes
+
+# ---- Mostrar gráficos ----
+g_violin
+g_hist
+g_area
+g_median
 ```
+
+> **Interpretación**\
+> - Los **violines** confirman el ranking histórico: Europa y Oceanía siempre arriba. Asia arranca abajo pero muestra cierto despegue, sobre todo en la segunda mitad del período. África, en cambio, parece casi estancada: su forma apenas cambia y sigue muy por debajo del resto.
+>
+> \- El **histograma log** deja ver el corrimiento sistemático a la derecha ⇒ la “clase media” mundial es cada vez más rica, aunque sigue habiendo gran dispersión.
+>
+> \- El **área apilada** revela el salto de Asia que se queda con una porción cada vez más grande del PIB mundial, aún con una mediana modesta. Esto refleja que gran parte del impulso económico viene de sus países más poblados. Europa pierde participación relativa aunque su PIB p/c mediano sube: tiene bajo crecimiento poblacional, así que pesa menos en el agregado mundial. Oceanía sigue el mismo patrón: ingresos altos pero población marginal ⇒ proporción global bajísima.
+>
+> \- La **línea de medianas** muestra la carrera: Europa y Oceanía llevan el liderazgo en crecimiento, Asia avanza pero de forma más lenta, lo que cuadra con los violines: mejora progresiva sin despegar del todo. África mejora apenas y sigue rezagada. América tiene una trayectoria intermedia, más estable y sin grandes sobresaltos.
 
 2.4. Versión interactiva con `ggplotly()` del diagrama de dispersión realizado en el punto 2.1.
 

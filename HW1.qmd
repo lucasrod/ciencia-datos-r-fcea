@@ -583,6 +583,39 @@ ggplot(gapminder, aes(x = factor(continent, levels = continents_ordered), y = li
 
 ```{r}
 #| label: ejercicio_23
+# Gráfico de densidad con escala original
+p3 <- ggplot(gapminder, aes(x = gdpPercap, fill = continent)) +
+  geom_density(alpha = 0.5) +
+  scale_x_continuous(labels = scales::dollar_format()) +
+  facet_wrap(~year, nrow = 4, ncol = 3) +
+  labs(
+    title = "Distribución del PIB per cápita por año",
+    subtitle = "Escala original del PIB",
+    x = "PIB per cápita (USD)",
+    y = "Densidad",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes
+
+# Gráfico de densidad con escala logarítmica
+p4 <- ggplot(gapminder, aes(x = gdpPercap, fill = continent)) +
+  geom_density(alpha = 0.5) +
+  scale_x_log10(labels = scales::dollar_format()) +
+  facet_wrap(~year, nrow = 4, ncol = 3) +
+  labs(
+    title = "Distribución del PIB per cápita por año",
+    subtitle = "Escala logarítmica del PIB",
+    x = "PIB per cápita (USD, escala log)",
+    y = "Densidad",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes
+
+# Mostrar ambos gráficos
+p3
+p4
 ```
 
 2.4. Versión interactiva con `ggplotly()` del diagrama de dispersión realizado en el punto 2.1.

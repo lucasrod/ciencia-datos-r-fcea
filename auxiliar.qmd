@@ -605,3 +605,84 @@ data_change %>%
 ```
 
 > Aunque el gráfico es estéticamente atractivo, puede ser engañoso, especialmente en el grupo "No aumentó", que contiene muy pocos países. La suavización genera una ilusión de densidad o volumen que en realidad no representa la escasez de datos. Por eso, es clave aclarar que las curvas no reflejan tamaños muestrales proporcionales y que deben interpretarse con precaución.
+
+------------------------------------------------------------------------
+
+# Paleta para continentes con colores consistentes
+
+```{r}
+paleta_continentes <- scale_color_brewer(palette = "Set1")
+paleta_fill_continentes <- scale_fill_brewer(palette = "Set1")
+```
+
+## ✅ Alternativa 1: Gráfico de línea apilada (área) de proporciones de `gdpPercap × pop` por continente
+
+### Qué muestra:
+
+-   Proporción del ingreso total mundial aportado por cada continente en cada año (ingreso total = `gdpPercap * pop`).
+-   Facetear por año no tiene sentido acá, así que **esta opción es complementaria, no sustituta** de 2.3.
+
+```{r}
+gapminder %>%
+  mutate(ingreso_total = gdpPercap * pop) %>%
+  group_by(year, continent) %>%
+  summarise(ingreso = sum(ingreso_total), .groups = "drop") %>%
+  group_by(year) %>%
+  mutate(prop = ingreso / sum(ingreso)) %>%
+  ggplot(aes(x = year, y = prop, fill = continent)) +
+  geom_area(alpha = 0.8) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Set1") +
+  labs(
+    title = "Proporción del PIB mundial aportado por continente",
+    x = "Año",
+    y = "Proporción del ingreso total",
+    fill = "Continente"
+  ) +
+  theme_minimal()
+```
+
+## ✅ Alternativa 2: Histograma facetado de `log(gdpPercap)` por año
+
+### Qué muestra:
+
+-   Distribución de países según su PIB per cápita.
+-   Escala logarítmica para evitar la distorsión por outliers.
+-   Cada panel representa un año → **respeta literalmente la consigna**.
+
+```{r}
+gapminder %>%
+  ggplot(aes(x = log10(gdpPercap), fill = continent)) +
+  geom_histogram(bins = 25, alpha = 0.5, position = "identity") +
+  facet_wrap(~ year, ncol = 3) +
+  labs(
+    title = "Distribución logarítmica del PIB per cápita por año",
+    subtitle = "Facetas por año, escala log10",
+    x = "log₁₀(PIB per cápita)",
+    y = "Frecuencia",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes
+```
+
+## ✅ Alternativa 3: Violin plots por año
+
+### Qué muestra:
+
+-   Dispersión y forma de la distribución de `gdpPercap` por año.
+-   Muy visual y fácil de leer, pero **no facetás**, sino que ponés años en el eje x.
+
+```{r}
+ggplot(gapminder, aes(x = factor(year), y = gdpPercap, fill = continent)) +
+  geom_violin(scale = "width", draw_quantiles = c(0.5)) +
+  scale_y_log10(labels = scales::dollar_format()) +
+  labs(
+    title = "Distribución del PIB per cápita por año y continente",
+    x = "Año",
+    y = "PIB per cápita (USD, escala log)",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes
+```

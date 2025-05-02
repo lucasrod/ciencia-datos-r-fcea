@@ -615,6 +615,51 @@ paleta_continentes <- scale_color_brewer(palette = "Set1")
 paleta_fill_continentes <- scale_fill_brewer(palette = "Set1")
 ```
 
+# 2.3: Facet wrap de `gdpPercap` según año
+
+## 📊 Gráfico 1: Escala original (prototipo exploratorio)
+
+```{r}
+#| label: ejercicio_23_prototipo_lineal
+# Facet wrap de `gdpPercap` según año — escala original
+g1 <- ggplot(gapminder, aes(x = gdpPercap, fill = continent)) +
+  geom_density(alpha = 0.5) +
+  scale_x_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  facet_wrap(~year, nrow = 3, ncol = 4) +
+  labs(
+    title = "Facet wrap de PIB per cápita según año",
+    subtitle = "Versión preliminar con escala original — prototipo visual sujeto a revisión",
+    x = "PIB per cápita (USD)",
+    y = "Densidad",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes
+
+g1
+```
+
+## 📊 Gráfico 2: Escala logarítmica (prototipo exploratorio)
+
+```{r}
+#| label: ejercicio_23_prototipo_log
+# Facet wrap de `gdpPercap` según año — escala logarítmica
+g2 <- ggplot(gapminder, aes(x = gdpPercap, fill = continent)) +
+  geom_density(alpha = 0.5) +
+  scale_x_log10(labels = scales::label_log()) +
+  facet_wrap(~year, nrow = 3, ncol = 4) +
+  labs(
+    title = "Facet wrap de PIB per cápita según año",
+    subtitle = "Versión preliminar con escala logarítmica — distribución aún no optimizada",
+    x = "PIB per cápita (USD, escala log)",
+    y = "Densidad",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes
+g2
+```
+
 ## ✅ Alternativa 1: Gráfico de línea apilada (área) de proporciones de `gdpPercap × pop` por continente
 
 ### Qué muestra:
@@ -642,7 +687,7 @@ gapminder %>%
   theme_minimal()
 ```
 
-## ✅ Alternativa 2: Histograma facetado de `log(gdpPercap)` por año
+## ✅ Alternativa 2: Histograma facetado (`gdpPercap` con continentes)
 
 ### Qué muestra:
 
@@ -651,38 +696,201 @@ gapminder %>%
 -   Cada panel representa un año → **respeta literalmente la consigna**.
 
 ```{r}
-gapminder %>%
-  ggplot(aes(x = log10(gdpPercap), fill = continent)) +
+g1 <- gapminder %>%
+  ggplot(aes(x = gdpPercap, fill = continent)) +
   geom_histogram(bins = 25, alpha = 0.5, position = "identity") +
-  facet_wrap(~ year, ncol = 3) +
+  scale_x_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  facet_wrap(~ year, ncol = 4) +
   labs(
-    title = "Distribución logarítmica del PIB per cápita por año",
-    subtitle = "Facetas por año, escala log10",
-    x = "log₁₀(PIB per cápita)",
+    title = "Distribución del PIB per cápita por año",
+    subtitle = "Escala original",
+    x = "PIB per cápita (USD)",
     y = "Frecuencia",
     fill = "Continente"
   ) +
   theme_minimal() +
   paleta_fill_continentes
-```
 
-## ✅ Alternativa 3: Violin plots por año
+g1
 
-### Qué muestra:
-
--   Dispersión y forma de la distribución de `gdpPercap` por año.
--   Muy visual y fácil de leer, pero **no facetás**, sino que ponés años en el eje x.
-
-```{r}
-ggplot(gapminder, aes(x = factor(year), y = gdpPercap, fill = continent)) +
-  geom_violin(scale = "width", draw_quantiles = c(0.5)) +
-  scale_y_log10(labels = scales::dollar_format()) +
+g2 <- gapminder %>%
+  ggplot(aes(x = log10(gdpPercap), fill = continent)) +
+  geom_histogram(bins = 25, alpha = 0.5, position = "identity") +
+  scale_x_log10(labels = scales::label_log()) +
+  facet_wrap(~ year, ncol = 4) +
   labs(
-    title = "Distribución del PIB per cápita por año y continente",
-    x = "Año",
-    y = "PIB per cápita (USD, escala log)",
+    title = "Distribución logarítmica del PIB per cápita por año",
+    subtitle = "Facetas por año, escala log10",
+    x = "PIB per cápita (escala log)",
+    y = "Frecuencia",
     fill = "Continente"
   ) +
   theme_minimal() +
   paleta_fill_continentes
+
+g2
 ```
+
+## ✅ Alternativa 3: **Evolución de la mediana de `gdpPercap` por continente (línea temporal)**
+
+Este gráfico muestra cómo evoluciona el nivel típico (mediana) del PIB per cápita en cada continente. Es ideal para mostrar tendencias macroeconómicas.
+
+```{r}
+g1 <- gapminder %>%
+  group_by(year, continent) %>%
+  summarise(median_gdp = median(gdpPercap), .groups = "drop") %>%
+  ggplot(aes(x = year, y = median_gdp, color = continent)) +
+  geom_line(size = 1) +
+  geom_point(size = 1.5) +
+  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  labs(
+    title = "Evolución de la mediana del PIB per cápita por continente",
+    subtitle = "Escala original",
+    x = "Año",
+    y = "Mediana del PIB per cápita (USD)",
+    color = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_continentes
+
+g1
+
+g2 <- gapminder %>%
+  group_by(year, continent) %>%
+  summarise(median_gdp = median(gdpPercap), .groups = "drop") %>%
+  ggplot(aes(x = year, y = median_gdp, color = continent)) +
+  geom_line(size = 1) +
+  geom_point(size = 1.5) +
+  scale_y_log10(labels = scales::label_log()) +
+  labs(
+    title = "Evolución de la mediana del PIB per cápita por continente",
+    x = "Año",
+    y = "Mediana del PIB per cápita (USD, log)",
+    color = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_continentes
+
+g2
+```
+
+---
+
+## ✅ Alternativa 4: **Evolución de toda la distribución — faceteado por año + violines**
+
+Esto sí cumple estrictamente con la consigna *"Facet wrap según año"*, pero en lugar de usar `geom_density()`, usamos **violin plots** para mostrar la dispersión y forma en cada panel:
+
+```{r}
+g1 <- gapminder %>%
+  ggplot(aes(x = continent, y = gdpPercap, fill = continent)) +
+  geom_violin(scale = "width", draw_quantiles = c(0.25, 0.5, 0.75)) +
+  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  facet_wrap(~ year, ncol = 4) +
+  labs(
+    title = "Distribución del PIB per cápita por continente en cada año",
+    subtitle = "Escala original",
+    x = "Continente",
+    y = "PIB per cápita (USD)",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+g1
+
+g2 <- gapminder %>%
+  ggplot(aes(x = continent, y = gdpPercap, fill = continent)) +
+  geom_violin(scale = "width", draw_quantiles = c(0.25, 0.5, 0.75)) +
+  scale_y_log10(labels = scales::label_log()) +
+  facet_wrap(~year, ncol = 4) +
+  labs(
+    title = "Distribución del PIB per cápita por continente en cada año",
+    subtitle = "Escala logarítmica para evitar distorsión por outliers",
+    x = "Continente",
+    y = "PIB per cápita (USD, log escala)",
+    fill = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+g2
+```
+
+## ✅ **Alternativa 5: Histograma facetado de `log(gdpPercap)` por año (sin continentes)**
+
+```{r}
+#| label: ejercicio_23_histograma
+
+g1 <- gapminder %>%
+  ggplot(aes(x = gdpPercap)) +
+  geom_histogram(bins = 25, fill = "steelblue", color = "white", alpha = 0.8) +
+  scale_x_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  facet_wrap(~ year, ncol = 4) +
+  labs(
+    title = "Distribución del PIB per cápita por año",
+    subtitle = "Sin separar por continente — escala original",
+    x = "PIB per cápita (USD)",
+    y = "Frecuencia"
+  ) +
+  theme_minimal()
+
+g1
+
+g2 <- gapminder %>%
+  ggplot(aes(x = log10(gdpPercap))) +
+  geom_histogram(bins = 25, fill = "steelblue", color = "white", alpha = 0.8) +
+  scale_x_log10(labels = scales::label_log()) +
+  facet_wrap(~ year, ncol = 4) +
+  labs(
+    title = "Distribución del PIB per cápita (escala log) por año",
+    subtitle = "Se muestra la distribución de países sin separar por continente",
+    x = "PIB per cápita (escala log)",
+    y = "Frecuencia"
+  ) +
+  theme_minimal()
+
+g2
+```
+
+---
+
+## ✅ **Alternativa 6: Diagrama de violín facetado por año (horizontal, sin continentes)**
+
+```{r}
+#| label: ejercicio_23_violin
+
+# Escala original
+g1 <- gapminder %>%
+  ggplot(aes(x = factor(year), y = gdpPercap)) +
+  geom_violin(fill = "darkorange", alpha = 0.7,
+              draw_quantiles = c(0.25, 0.5, 0.75)) +
+  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+  labs(
+    title = "Distribución del PIB per cápita por año",
+    subtitle = "Violines verticales — escala original",
+    x = "Año",
+    y = "PIB per cápita (USD)"
+  ) +
+  theme_minimal()
+
+# Escala logarítmica
+g2 <- gapminder %>%
+  ggplot(aes(x = factor(year), y = gdpPercap)) +
+  geom_violin(fill = "darkorange", alpha = 0.7,
+              draw_quantiles = c(0.25, 0.5, 0.75)) +
+  scale_y_log10(labels = scales::label_log()) +
+  labs(
+    title = "Distribución del PIB per cápita por año (escala log)",
+    subtitle = "Violines verticales — escala logarítmica",
+    x = "Año",
+    y = "PIB per cápita (USD, log escala)"
+  ) +
+  theme_minimal()
+
+# Visualización
+g1
+g2
+```
+

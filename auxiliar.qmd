@@ -20,6 +20,7 @@ library(e1071)
 library(nortest)
 library(lmtest)
 library(ggrepel)
+library(ggridges)
 data(gapminder)
 
 set.seed(42)  # reproducibilidad del muestreo
@@ -566,3 +567,41 @@ summary_estandarizado_aux %>%
     caption = "Media y desviación estándar de variables estandarizadas"
   )
 ```
+
+## Visualizaciones para ejercicio 1.14
+
+```{r}
+data_change <- gapminder %>%
+  group_by(country) %>%
+  arrange(year) %>%
+  mutate(lifeExp_diff = lifeExp - lag(lifeExp)) %>%
+  filter(year == 2007) %>%
+  mutate(change = if_else(lifeExp_diff > 0, "Aumentó", "No aumentó"))
+
+data_change %>%
+  ggplot(aes(x = change, y = gdpPercap, color = change)) +
+  geom_jitter(width = 0.2, alpha = 0.6, size = 2) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 4, color = "black") +
+  labs(
+    title = "GDP per cápita en 2007 según cambio en esperanza de vida",
+    x = "Cambio en lifeExp",
+    y = "GDP per cápita (USD)"
+  ) +
+  theme_minimal()
+```
+
+> Se observa que la mayoría de los países experimentaron un aumento en la esperanza de vida entre 2002 y 2007. Dentro de ese grupo, hay una gran dispersión en el ingreso per cápita, incluyendo tanto países de ingresos bajos como muy altos. En contraste, los pocos países donde no aumentó la esperanza de vida presentan niveles consistentemente bajos de ingreso. Esto refuerza la asociación entre desarrollo económico y mejora en indicadores de salud.
+
+```{r}
+data_change %>%
+  ggplot(aes(x = gdpPercap, y = change, fill = change)) +
+  geom_density_ridges(scale = 1.5, alpha = 0.6, show.legend = FALSE) +
+  labs(
+    title = "Distribución de GDP per cápita según cambio en esperanza de vida (2007)",
+    x = "GDP per cápita",
+    y = ""
+  ) +
+  theme_minimal()
+```
+
+> Aunque el gráfico es estéticamente atractivo, puede ser engañoso, especialmente en el grupo "No aumentó", que contiene muy pocos países. La suavización genera una ilusión de densidad o volumen que en realidad no representa la escasez de datos. Por eso, es clave aclarar que las curvas no reflejan tamaños muestrales proporcionales y que deben interpretarse con precaución.

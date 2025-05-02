@@ -516,9 +516,15 @@ summary_lifeExp_gdpPercap %>%
 
 ```{r}
 #| label: ejercicio_21
+
+# Paleta para continentes con colores consistentes
+paleta_continentes <- scale_color_brewer(palette = "Set1")
+paleta_fill_continentes <- scale_fill_brewer(palette = "Set1")
+
+
 # Gráfico con escala original
 p1 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
-  geom_point(alpha = 0.6) +
+  geom_point(alpha = 0.5) +
   scale_x_continuous(labels = scales::dollar_format()) +
   labs(
     title = "Relación entre PIB per cápita y esperanza de vida",
@@ -527,11 +533,12 @@ p1 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
     y = "Esperanza de vida (años)",
     color = "Continente"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  paleta_continentes
 
 # Gráfico con escala logarítmica
 p2 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
-  geom_point(alpha = 0.6) +
+  geom_point(alpha = 0.5) +
   scale_x_log10(labels = scales::dollar_format()) +
   labs(
     title = "Relación entre PIB per cápita y esperanza de vida",
@@ -540,7 +547,8 @@ p2 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
     y = "Esperanza de vida (años)",
     color = "Continente"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  paleta_continentes
 
 # Mostrar ambos gráficos
 p1
@@ -551,6 +559,24 @@ p2
 
 ```{r}
 #| label: ejercicio_22
+# Calcular medianas por continente para ordenar
+continents_ordered <- gapminder %>%
+  group_by(continent) %>%
+  summarise(median_lifeExp = median(lifeExp)) %>%
+  arrange(median_lifeExp) %>%
+  pull(continent)
+
+# Crear boxplot con continentes ordenados
+ggplot(gapminder, aes(x = factor(continent, levels = continents_ordered), y = lifeExp, fill = continent)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(
+    title = "Distribución de la esperanza de vida por continente",
+    subtitle = "Continentes ordenados por mediana de esperanza de vida",
+    x = "Continente",
+    y = "Esperanza de vida (años)"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes
 ```
 
 2.3. Facet wrap de `gdpPercap` según año.

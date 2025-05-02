@@ -682,12 +682,42 @@ g_median
 ```{r}
 #| label: ejercicio_24
 
+grafico_interactivo <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent, text = paste("País:", country, "<br>Año:", year))) +
+  geom_point(alpha = 0.5) +
+  scale_x_log10(labels = scales::dollar_format()) +
+  labs(
+    title = "Relación interactiva entre PIB per cápita y esperanza de vida",
+    subtitle = "Escala logarítmica del PIB per cápita",
+    x = "PIB per cápita (USD, escala log)",
+    y = "Esperanza de vida (años)",
+    color = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_continentes
+
+ggplotly(grafico_interactivo, tooltip = "text")
+
+
 ```
 
 2.5. Violin plot de `gdpPercap` por continente.
 
 ```{r}
 #| label: ejercicio_25
+
+# — Violin plot en escala logarítmica —
+gapminder %>%
+  ggplot(aes(x = continent, y = gdpPercap, fill = continent)) +
+  geom_violin(alpha = 0.7, draw_quantiles = c(0.25, 0.5, 0.75)) +
+  scale_y_log10(labels = scales::label_log()) +
+  labs(
+    title    = "Distribución del PIB per cápita por continente",
+    subtitle = "Escala logarítmica",
+    x        = "Continente",
+    y        = "PIB per cápita (USD, escala log)"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes
 
 ```
 

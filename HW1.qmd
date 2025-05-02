@@ -516,8 +516,35 @@ summary_lifeExp_gdpPercap %>%
 
 ```{r}
 #| label: ejercicio_21
+# Gráfico con escala original
+p1 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
+  geom_point(alpha = 0.6) +
+  scale_x_continuous(labels = scales::dollar_format()) +
+  labs(
+    title = "Relación entre PIB per cápita y esperanza de vida",
+    subtitle = "Escala original del PIB per cápita",
+    x = "PIB per cápita (USD)",
+    y = "Esperanza de vida (años)",
+    color = "Continente"
+  ) +
+  theme_minimal()
 
+# Gráfico con escala logarítmica
+p2 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
+  geom_point(alpha = 0.6) +
+  scale_x_log10(labels = scales::dollar_format()) +
+  labs(
+    title = "Relación entre PIB per cápita y esperanza de vida",
+    subtitle = "Escala logarítmica del PIB per cápita",
+    x = "PIB per cápita (USD, escala log)",
+    y = "Esperanza de vida (años)",
+    color = "Continente"
+  ) +
+  theme_minimal()
 
+# Mostrar ambos gráficos
+p1
+p2
 ```
 
 2.2. Boxplot de `lifeExp` por continente. Interpretar los resultados obtenidos

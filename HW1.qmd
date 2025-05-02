@@ -452,8 +452,45 @@ summary_gdpPercap_lifeExp %>%
 
 ```{r}
 #| label: ejercicio_113
+# Estandarizar variables y calcular estadísticas
+summary_estandarizado <- gapminder %>%
+  # Estandarizar las variables seleccionadas
+  mutate(
+    across(
+      c(lifeExp, gdpPercap, pop),
+      ~scale(.x),
+      .names = "z_{.col}"
+    )
+  ) %>%
+  # Calcular media y desvío estándar de las variables estandarizadas
+  summarise(
+    across(
+      starts_with("z_"),
+      list(
+        media = ~mean(.x, na.rm = TRUE),
+        desvio = ~sd(.x, na.rm = TRUE)
+      ),
+      .names = "{.fn}_{.col}"
+    )
+  ) %>%
+  # Pasar a formato long
+  pivot_longer(
+    cols = everything(),
+    names_to = c("estadistico", "variable"),
+    names_sep = "_z_",
+    values_to = "valor"
+  ) %>%
+  pivot_wider(
+    names_from = estadistico,
+    values_from = valor
+  )
 
-
+# Mostrar resultados
+summary_estandarizado %>%
+  knitr::kable(
+    caption = "Estadísticas de las variables estandarizadas",
+    digits = 4
+  )
 ```
 
 1.14. Calcular el cambio en esperanza de vida entre años (utilizar la función `lag`) para cada país y agrupar según si aumentó o no. Comparar el `gdpPercap` promedio en 2007 según esa clasificación. Guardar el resultado en un nuevo objeto llamado `summary_lifeExp_gdpPercap`.

@@ -503,3 +503,66 @@ ggplot(data_2007, aes(x = gdpPercap, y = lifeExp)) +
 ```
 
 > Esta visualización muestra la relación entre PIB per cápita y esperanza de vida en 2007, destacando en rojo los 10 países con mayor esperanza de vida. Los países del top 10 tienden a concentrarse en la parte superior derecha del gráfico, confirmando la asociación entre alto desarrollo económico y mayor longevidad.
+
+------------------------------------------------------------------------
+
+## Visualizaciones de distribuciones antes y después de estandarizar variables
+
+```{r}
+# Visualización de distribuciones originales
+tmp_orig <- gapminder %>%
+  pivot_longer(cols = c(lifeExp, gdpPercap, pop),
+               names_to = "variable", values_to = "valor")
+ggplot(tmp_orig, aes(x = valor, fill = variable)) +
+  geom_density(alpha = 0.6) +
+  facet_wrap(~ variable, scales = "free") +
+  labs(
+    title = "Distribuciones de variables originales",
+    x = "Valor",
+    y = "Densidad"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Visualización de distribuciones estandarizadas
+tmp_scaled <- gapminder %>%
+  mutate(
+    z_lifeExp = as.numeric(scale(lifeExp)),
+    z_gdpPercap = as.numeric(scale(gdpPercap)),
+    z_pop = as.numeric(scale(pop))
+  ) %>%
+  pivot_longer(
+    cols = starts_with("z_"),
+    names_to = "variable", values_to = "valor"
+  ) %>%
+  mutate(variable = sub("^z_", "", variable))
+ggplot(tmp_scaled, aes(x = valor, fill = variable)) +
+  geom_density(alpha = 0.6) +
+  facet_wrap(~ variable, scales = "free") +
+  labs(
+    title = "Distribuciones de variables estandarizadas",
+    x = "Valor estandarizado",
+    y = "Densidad"
+  ) +
+  theme_minimal()
+```
+
+### Confirmar media y desviación de variables estandarizadas
+
+```{r}
+# Calcular media y sd usando el objeto tmp_scaled generado anteriormente
+summary_estandarizado_aux <- tmp_scaled %>%
+  group_by(variable) %>%
+  summarise(
+    media = mean(valor, na.rm = TRUE),
+    desvio = sd(valor, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Mostrar resultados
+summary_estandarizado_aux %>%
+  knitr::kable(
+    caption = "Media y desviación estándar de variables estandarizadas"
+  )
+```

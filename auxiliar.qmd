@@ -973,3 +973,70 @@ data_mosaic %>%
   theme_minimal(base_size = 12)
 
 ```
+
+# Propuesta de visualización animada al estilo Hans Rosling
+
+## Concepto
+
+**Bubble chart**:
+
+* **x** = `gdpPercap` (escala log),
+* **y** = `lifeExp`,
+* **size** = `pop`,
+* **color** = `continent`,
+* **frame** = `year`.
+
+Esto replica el clásico *Gapminder* interactivo. Se puede exportar como GIF (gganimate) o mantenerlo interactivo (plotly).
+
+---
+
+## Opción A — `gganimate` (GIF)
+
+``` r
+library(gganimate)
+
+gap_bubbles <- gapminder %>% 
+  ggplot(aes(
+    x = gdpPercap, y = lifeExp,
+    size = pop, colour = continent
+  )) +
+  geom_point(alpha = 0.8, show.legend = FALSE) +
+  scale_x_log10(labels = scales::dollar_format()) +
+  scale_size(range = c(2, 20), guide = "none") +
+  labs(
+    title = 'Año: {frame_time}',
+    x = 'PIB per cápita (log10 USD)',
+    y = 'Esperanza de vida (años)'
+  ) +
+  theme_minimal() +
+  transition_time(year) +
+  ease_aes('linear')
+
+animate(gap_bubbles)
+```
+
+---
+
+## Opción B — `plotly` (HTML interactivo)
+
+```{r}
+library(plotly)
+
+plot_ly(
+  gapminder,
+  x = ~gdpPercap, y = ~lifeExp,
+  size = ~pop, color = ~continent,
+  frame = ~year, text = ~country,
+  type = 'scatter', mode = 'markers',
+  sizes = c(10, 100),
+  marker = list(line = list(width = 0))
+) %>% 
+  layout(
+    title = 'Gapminder dinámico',
+    xaxis = list(type = 'log', title = 'PIB per cápita (USD, log)'),
+    yaxis = list(title = 'Esperanza de vida (años)')
+  ) %>%
+  animation_opts(
+    frame = 1000, easing = "linear", redraw = FALSE
+  )
+```

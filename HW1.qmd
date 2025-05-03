@@ -512,6 +512,8 @@ summary_lifeExp_gdpPercap %>%
   knitr::kable(caption = "Promedio de gdpPercap en 2007 según cambio en esperanza de vida")
 ```
 
+### 2. Visualizaciones
+
 2.1. Gráfico de dispersión entre `gdpPercap` y `lifeExp`, coloreado por `continent`. Interpretar los resultados obtenidos.
 
 ```{r}
@@ -669,13 +671,13 @@ g_median
 ```
 
 > **Interpretación**\
-> - Los **violines** confirman el ranking histórico: Europa y Oceanía siempre arriba. Asia arranca abajo pero muestra cierto despegue, sobre todo en la segunda mitad del período. África, en cambio, parece casi estancada: su forma apenas cambia y sigue muy por debajo del resto.
+> - Los **violines** confirman el ranking histórico: Europa y Oceanía siempre arriba. Asia arranca abajo pero muestra cierto despegue, sobre todo en la segunda y tercera fila (1972-2007). África, en cambio, parece casi estancada: su forma apenas cambia y sigue muy por debajo del resto.
 >
 > \- El **histograma log** deja ver el corrimiento sistemático a la derecha ⇒ la “clase media” mundial es cada vez más rica, aunque sigue habiendo gran dispersión.
 >
-> \- El **área apilada** revela el salto de Asia que se queda con una porción cada vez más grande del PIB mundial, aún con una mediana modesta. Esto refleja que gran parte del impulso económico viene de sus países más poblados. Europa pierde participación relativa aunque su PIB p/c mediano sube: tiene bajo crecimiento poblacional, así que pesa menos en el agregado mundial. Oceanía sigue el mismo patrón: ingresos altos pero población marginal ⇒ proporción global bajísima.
+> \- El **área apilada** revela el salto de Asia que se queda con una porción cada vez más grande del PIB mundial, aún con una mediana modesta. Esto refleja que gran parte del impulso económico viene de sus países más poblados. Europa pierde participación relativa, aunque en realidad su PIB p/c mediano sube (tiene bajo crecimiento poblacional), así que pesa menos en el agregado mundial. Oceanía sigue el mismo patrón: ingresos altos pero población marginal ⇒ proporción global bajísima.
 >
-> \- La **línea de medianas** muestra la carrera: Europa y Oceanía llevan el liderazgo en crecimiento, Asia avanza pero de forma más lenta, lo que cuadra con los violines: mejora progresiva sin despegar del todo. África mejora apenas y sigue rezagada. América tiene una trayectoria intermedia, más estable y sin grandes sobresaltos.
+> \- La **línea de medianas** muestra la carrera: Europa y Oceanía llevan el liderazgo en crecimiento, Asia avanza pero de forma más lenta, lo que cuadra con los violines: mejora progresiva sin despegar del todo. África casi no mejora y sigue rezagada. América tiene una trayectoria intermedia, más estable y sin grandes sobresaltos.
 
 2.4. Versión interactiva con `ggplotly()` del diagrama de dispersión realizado en el punto 2.1.
 
@@ -696,8 +698,6 @@ grafico_interactivo <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color =
   paleta_continentes
 
 ggplotly(grafico_interactivo, tooltip = "text")
-
-
 ```
 
 2.5. Violin plot de `gdpPercap` por continente.

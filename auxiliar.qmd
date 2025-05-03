@@ -21,6 +21,9 @@ library(nortest)
 library(lmtest)
 library(ggrepel)
 library(ggridges)
+library(gghalves)
+library(ggalluvial)
+library(scales)
 data(gapminder)
 
 set.seed(42)  # reproducibilidad del muestreo
@@ -892,4 +895,81 @@ g2 <- gapminder %>%
 # Visualización
 g1
 g2
+```
+
+## ✅ **Alternativa 7: Split‐violin de `gdpPercap` vs `lag(gdpPercap)` por continente
+
+```{r}
+# Preparo datos con lag de 1 año por país
+df_halves <- gapminder %>%
+  group_by(country) %>%
+  arrange(year) %>%
+  mutate(lag_gdp = lag(gdpPercap)) %>%
+  ungroup() %>%
+  filter(!is.na(lag_gdp))
+
+# Split‐violin en log‐escala, faceteado por año
+ggplot(df_halves, aes(x = continent, fill = continent)) +
+  geom_half_violin(
+    aes(y = lag_gdp),
+    side  = "l",
+    alpha = 0.6,
+    scale = "width",
+    trim  = FALSE
+  ) +
+  geom_half_violin(
+    aes(y = gdpPercap),
+    side  = "r",
+    alpha = 0.6,
+    scale = "width",
+    trim  = FALSE
+  ) +
+  scale_y_log10(labels = label_log()) +
+  facet_wrap(~year, ncol = 4) +
+  labs(
+    title    = "PIB per cápita: lag vs actual cada año",
+    subtitle = "Violin por continente (escala log)",
+    y        = "PIB per cápita (USD, log escala)",
+    fill     = "Continente"
+  ) +
+  theme_minimal() +
+  paleta_fill_continentes +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1),
+    legend.position = c(0.9, 0.025)
+  )
+```
+
+## ✅ **Diagrama de mosaico de `continent` contra una categoría derivada de `lifeExp`**
+
+```{r}
+library(ggalluvial)
+
+data_mosaic <- gapminder %>%
+  mutate(
+    lifeExp_cat = case_when(
+      lifeExp < 50 ~ "baja",
+      lifeExp < 70 ~ "media",
+      TRUE         ~ "alta"
+    )
+  )
+
+data_mosaic %>%
+  count(continent, lifeExp_cat) %>%
+  ggplot(aes(axis1 = continent, axis2 = lifeExp_cat, y = n)) +
+  geom_alluvium(aes(fill = lifeExp_cat), width = 1/12, alpha = 0.8) +
+  geom_stratum(width = 1/12, fill = "grey90") +
+  geom_label(stat = "stratum", aes(label = after_stat(stratum))) +
+  scale_x_discrete(
+    limits = c("continent", "lifeExp_cat"),
+    expand = c(.1, .1)
+  ) +
+  labs(
+    title = "Alluvial: flujo de países por categoría de esperanza",
+    x     = "",
+    y     = "Cantidad de países",
+    fill  = "LifeExp"
+  ) +
+  theme_minimal(base_size = 12)
+
 ```

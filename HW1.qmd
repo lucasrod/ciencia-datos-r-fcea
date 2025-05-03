@@ -726,7 +726,53 @@ gapminder %>%
 ```{r}
 #| label: ejercicio_26
 
+data_mosaic <- gapminder %>%
+  mutate(
+    lifeExp_cat = case_when(
+      lifeExp < 50 ~ "baja",
+      lifeExp < 70 ~ "media",
+      TRUE         ~ "alta"
+    ),
+    lifeExp_cat = factor(lifeExp_cat, levels = c("baja", "media", "alta"))
+  )
 
+ggplot(data_mosaic) +
+  geom_mosaic(
+    aes(weight = 1, x = product(continent, lifeExp_cat), fill = lifeExp_cat),
+    na.rm = TRUE
+  ) +
+  labs(
+    title = "Distribución conjunta: continente y categoría de esperanza de vida",
+    subtitle = "Colores representan la categoría (baja / media / alta)",
+    x     = "Esperanza de vida",
+    y     = "Proporción por continente",
+    fill  = "Esperanza\nde vida"
+  ) +
+  theme_minimal(base_size = 12) +
+  paleta_fill_continentes +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1)
+  )
+```
+
+```{r}
+ggplot(data_mosaic) +
+  geom_mosaic(
+    aes(weight = 1, x = product(continent, lifeExp_cat), fill = continent),
+    na.rm = TRUE
+  ) +
+  labs(
+    title = "Distribución conjunta: continente y categoría de esperanza de vida",
+    subtitle = "Colores representan los continentes",
+    x     = "Esperanza de vida",
+    y     = "Proporción por continente",
+    fill  = "Continente"
+  ) +
+  theme_minimal(base_size = 12) +
+  paleta_fill_continentes +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1)
+  )
 ```
 
 ------------------------------------------------------------------------

@@ -303,7 +303,7 @@ summary(modelo)
 ```
 
 > **Modelo ajustado:**\
-> Se ajustó un modelo de regresión lineal simple con `log_lifeExp` como variable dependiente y `log_ingreso_total` como variable independiente. El modelo resultante fue: \[ \widehat{\log(\text{lifeExp})} = 2.392 + 0.070 \cdot \log(\text{ingreso\_total}) \] donde ambos coeficientes resultaron altamente significativos (p-valor \< 2.2e-16).
+> Se ajustó un modelo de regresión lineal simple con `log_lifeExp` como variable dependiente y `log_ingreso_total` como variable independiente. El modelo resultante fue: $$ \widehat{\log(\text{lifeExp})} = 2.392 + 0.070 \cdot \log(\text{ingreso\_total}) $$ donde ambos coeficientes resultaron altamente significativos (p-valor \< 2.2e-16).
 
 > **Interpretación económica:**\
 > En este contexto log-log, el coeficiente de `log_ingreso_total` (≈ 0.07) representa una **elasticidad**: un aumento del 1% en el ingreso total se asocia, en promedio, con un aumento de aproximadamente **0.07% en la esperanza de vida**.

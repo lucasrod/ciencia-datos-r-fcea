@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.43">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Lucas Rodriguez">
+<meta name="dcterms.date" content="2025-05-29">
+
+<title>Revisión 2024</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="revision_solucion_files/libs/clipboard/clipboard.min.js"></script>
+<script src="revision_solucion_files/libs/quarto-html/quarto.js"></script>
+<script src="revision_solucion_files/libs/quarto-html/popper.min.js"></script>
+<script src="revision_solucion_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="revision_solucion_files/libs/quarto-html/anchor.min.js"></script>
+<link href="revision_solucion_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="revision_solucion_files/libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="revision_solucion_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="revision_solucion_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="revision_solucion_files/libs/bootstrap/bootstrap-c0367b04c37547644fece4185067e4a7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Revisión 2024</h1>
+<p class="subtitle lead">Ciencia de Datos con R</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Lucas Rodriguez </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 29, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>EXPLICATIVO SOBRE LA PRUEBA</strong>:</p>
+<p>Esta prueba es de carácter <em>INDIVIDUAL</em>, cada estudiante debe completarla y no interactuar con el resto de los estudiantes, si tienen dudas nos pueden preguntar a Mauro o a mi durante la prueba. Pueden consultar durante la prueba el libro del curso (https://r4ds.hadley.nz), las presentaciones de clase, tus apuntes, actividades y deberes del curso pero ningún otro material adicional. Sin embargo <em>NO ESTA PERMITIDO</em> utilizar otro material que el sugerido ni las respuestas, comentarios o sugerencias de otros personas que no sean los docentes del curso, cualquier apartamiento de esto invalidará la prueba .</p>
+<p>Por favor completá tu nombre y CI en el YAML del archivo donde dice author: “NOMBRE Y CI:”. Los archivos y la información necesaria para desarrollar la prueba se encuentran en Eva en la pestaña Revisión_2024. La revisión debe quedar en tu repositorio del curso GitHub en una carpeta que se llame Revision_2024 con el resto de las actividades y tareas del curso. Parte de los puntos de la prueba consisten en que tu revisión sea reproducible y tu repositorio de GitHub esté bien organizado como se indica en el Ejercicio 1.</p>
+<p>La prueba dura 2 horas con posibilidad de extensión de media hora adicional.</p>
+<p>Hay puntos parciales por lo que si algunas de las respuestas de código te queda incompleta agregá debajo del entorno de código <code>#| eval: false</code> para que no se evalúe el mismo y evitar posibles errores.</p>
+<section id="ejercicio-1-github-y-entrega-de-la-revisión" class="level1">
+<h1>EJERCICIO 1 (GitHub y entrega de la Revisión)</h1>
+<section id="puntos" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="puntos">(10 puntos)</h2>
+<p>Esta pregunta es sobre el uso de GitHub y es la forma que van a entregar la prueba. Recordar que para que tengas la última versión de tu repositorio debes hacer <code>pull</code> a tu repositorio para no generar inconsistencias y antes de terminar subir tus cambios con <code>commit</code> y <code>push</code>.</p>
+<p><strong>1.1)</strong> (1 Punto) En tu repositorio del curso creá una carpeta que se llame Revision_2024 (sin tilde).</p>
+<blockquote class="blockquote">
+<p>cd ~/Repos git clonegit@github.com:lucasrod/ciencia-datos-r-fcea.git cd ciencia-datos-r-fcea mkdir Revision_2024 cd Revision_2024</p>
+</blockquote>
+<p><strong>1.2)</strong> (1 Punto) Asegurate que soy colaboradora del mismo y si no lo soy mandame la invitación, mi usuario es natydasilva.</p>
+<p><strong>1.3)</strong> (1 Punto) Subí el archivo .qmd de esta revisión y los necesarios para reproducir el documento. Actualizá el repositorio regularmente durante prueba para que todo ande bien, asegurate al final de la prueba que el archivo qmd compila adecuadamente, es decir, se genera el archivo revision.pdf adecuadamente.</p>
+<blockquote class="blockquote">
+<p>quarto create-project . cp ~/Downloads/revision_2024.qmd revision.qmd</p>
+</blockquote>
+<p><strong>1.4)</strong> (3 Puntos) Asegurate que tu prueba sea reproducible cuando clone tu repositorio. Para ello deberás subir los archivos necesarios para la reproducibilidad (los datos van a ser necesarios). Poné los datos en la carpeta Datos de tu repositorio.</p>
+<p><strong>1.5)</strong> (2 Puntos) A parte de subir el archivo al repositorio debés mandarme por correo (natalia.dasilva@fcea.edu.uy) el archivo revision.qmd y el revision.pdf de tu versión final. Escribime en el asunto del correo Rev24_STAT_NT y en el cuerpo tu usuario de GitHub para que sea más sencillo encontrar tu repositorio con la prueba.</p>
+<p><strong>1.6)</strong> (2 Puntos) Presentá tu código de forma ordenada así como las respuestas a cada pregunta.</p>
+</section>
+</section>
+<section id="ejercicio-2-r-base" class="level1">
+<h1>Ejercicio 2 (R Base)</h1>
+<section id="puntos-1" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="puntos-1">(25 Puntos)</h2>
+<p>Este ejercicio debe ser resuelto con R base en caso contrario se especificará el paquete o función específica a utilizar.</p>
+<p><strong>2.1</strong> (3 Puntos) Generá un <code>data.frame</code> con tres columnas nombradas como <code>var1</code>, <code>var2</code>, <code>var3</code>, y 12 filas siendo <code>var1</code> un vector numérico con posibles valores 2, 3 y 4, con más de una observación para cada posible valor, <code>var2</code> un factor con tres niveles, <code>alto</code>, <code>medio</code> y <code>bajo</code> con más de una observación para cada posible valor y <code>var3</code> un vector lógico Guardá el <code>data.frame</code> en un objeto llamado <code>datos</code></p>
+<p><strong>2.2</strong> (2 Puntos) Usando R base, seleccioná del conjunto datos la tercera columna en base a su nombre (<code>var3</code>)</p>
+<p><strong>2.3</strong> (5 Puntos) Usando R base, seleccioná las filas de <code>datos</code> donde <code>var1</code> es 3, <code>var2</code> es medio y <code>var3</code> es FALSE.</p>
+<p><strong>2.4</strong> (3 Puntos) Usando R base, seleccioná las filas donde <code>var2</code> toma los valores medio y alto</p>
+<p><strong>2.5</strong> (2 Puntos) Hacer una tabla que cuente la cantidad de observaciones para cada combinación de <code>var2</code> y <code>var3</code></p>
+<p><strong>2.6</strong> (10 Puntos) Usando un for loop generá una nueva variable en el objeto <code>datos</code> llamada <code>var4</code> que valga 1 si (<code>var2</code> es alto y <code>var3</code> es TRUE) o (<code>var2</code> es medio y <code>var3</code> es TRUE) y vale 0 en otro caso</p>
+</section>
+</section>
+<section id="ejercicio-3-tidyverse" class="level1">
+<h1>Ejercicio 3 (tidyverse)</h1>
+<section id="puntos-2" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="puntos-2">(35 Puntos)</h2>
+<p>Los datos que vamos a utilizar son del catálogo de datos abertos (https://catalogodatos.gub.uy). Especificamente utilizaremos los datos de e las Encuestas EUTIC (Encuestas de uso de TIC) que realiza el Instituto Nacional de Estadística en conjunto con la división Agenda Digital y Observatorio de la Sociedad de la Información de AGESIC. Por cada año de las encuestas realizadas se publica el recurso con los datos, además se publican por cada año el diccionario de variables y el formulario de la encuesta. En la carpeta Revisión_2024 encontrarás dos archivos <code>eutic.xlsx</code> que contiene los datos de la encuesta para el 2019 y el archivo <code>diccionario.xls</code> que contiene los metadatos de dicha encuesta (descripción de variables, codificación, etc ).</p>
+<p><strong>3.1</strong> (2 Puntos)</p>
+<p>Leer los datos <code>eutic.xlsx</code> usando el paquete <code>readxl</code> y <code>here</code> para asegurar la reproducibilidad en caso que lo necesites, guardá los datos en un objeto llamado <code>tic</code>.</p>
+<p><strong>3.2</strong> (2 Puntos)</p>
+<p>Vamos a trabajar con un subconjunto de los datos. Generá un nuevo objeto llamado <code>tic_red</code> que contenga las variables desde <code>C7</code> hasta <code>C9</code> y <code>C14_1</code> hasta <code>C14_18</code>(en el archivo <code>diccionario.xls</code> podés encontrar el nombre de todas las variables junto con su descripción). El conjunto de datos reducidos (<code>tic_red</code>) debe tener 2341 filas y 21 columnas.</p>
+<p>De ahora en más trabajaremos con el conjunto de datos reducidos <code>tic_red</code></p>
+<p><strong>3.3</strong> (5 puntos)</p>
+<p>Usando funciones del paquete <code>ggplot2</code>, hacé un gráfico de barras que contenga la cantidad de personas que utilizó alguna vez internet (<code>C9</code>). Cambiá los ticks del eje <code>x</code> donde dice 1 debe decir <code>Si</code> y donde dice <code>2</code> debe decir <code>No</code> y en el resto de los ticks nada. Para esta parte debes notar que la variable <code>C9</code> es numérica. Cambiá la etiqueta del eje <code>y</code> a Cantidad de personas<code>y la del eje</code>x<code>a</code>Usa internet`.</p>
+<p><strong>3.4</strong> (7 Puntos) Esta pregunta tiene tres partes:</p>
+<ol type="1">
+<li>Renombrá la variable <code>C9</code> como <code>usoint</code> y <code>C7</code> como <code>sexo</code></li>
+<li>Transformá la variable <code>usoint</code> y <code>sexo</code> en una variable de tipo factor</li>
+<li>Recodificá la variable <code>usoint</code> para que <code>1</code> sea <code>Si</code> y <code>2</code> sea <code>No</code> y recodificá <code>sexo</code> para que <code>1</code> sea <code>Hombre</code> y <code>2</code> sea <code>Mujer</code></li>
+<li>Guardá los datos modificados en <code>tic_reco</code></li>
+<li>Luego de todos los pasos anteriores repetí el gráfico de la Pregunta 3.3 con los datos <code>tic_reco</code> notando el paso que ya no es necesario luego de las tranformaciones realizadas.</li>
+</ol>
+<p><strong>3.5</strong> (4 puntos) Modifique el gráfico anterior para obtener las barras en términos de <strong>proporción</strong> en vez de cantidad modificando las leyendas de los ejes de forma apropiada.</p>
+<p><strong>3.6</strong> (4 Puntos) Utilizando funciones de <code>dplyr</code> respondé ¿Qué proporción de personas que utilizan internet son Mujeres ?</p>
+<p><strong>3.7</strong> (6 Punto)</p>
+<p>Usando ggplot2 realiza una visualización apropiada a tu elección para ver la distribución de las edades de las personas que nunca usaron internet según sexo. Debes incluir etiquetas apropiadas para los ejes y título. Describe brevemente qué ves en el gráfico y comentá si hay o no diferencias en la edad entre hombres y mujeres.</p>
+<p>A su vez usando funciones de <code>dplyr</code> respondé ¿Cuál es el promedio de edad de las personas que nunca usaron internet para cada sexo?</p>
+<p><strong>3.8</strong> (5 Puntos)</p>
+<p>De forma similar al punto 3.4 re-codificá las variables <code>C14_1</code> hasta <code>C14_18</code>. Son 18 columnas, utiliza alguna función de <code>dplyr</code> que opere sobre múltiples columnas al mismo tiempo. Al revisar los meta datos este grupo de variables tiene la misma codificación, es decir que <code>1</code> sea <code>Si</code>, <code>2</code> sea <code>No</code> y <code>3</code> sea <code>No contesta</code>. Guardá el nuevo conjunto de datos en un objeto <code>final</code>.</p>
+<p></p>
+</section>
+</section>
+<section id="ejercicio-4-varios" class="level1">
+<h1>Ejercicio 4 (Varios)</h1>
+<section id="puntos-3" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="puntos-3">(30 Puntos)</h2>
+<p><strong>4.1</strong> (15 Puntos)</p>
+<p>Generá una función <code>pedidos</code> que tenga como argumentos un vector numérico <code>cprod</code> cantidad de productos a comprar de cada tipo y un vector numérico <code>cdisp</code> con la cantidad disponible de dichos productos (ambos vectores del mismo largo) que devuelva 1 si se pude hacer el pedido y 0 en caso contrario. El pedido se puede realizar siempre que haya stock suficiente para cada producto, es decir que la cantidad disponible sea igual o mayor a la cantidad pedida. A su vez si alguno de los argumentos no es un vector numérico la función no debe ser evaluada y debe imprimir el mensaje “Argumento no numérico”.</p>
+<p>Comprobá que el resultado de la función sea</p>
+<p><code>pedidos(c(1,4,2), 1:3) = 0</code></p>
+<p><code>pedidos(c("A","B"), 1:3)= Argumento no numérico</code></p>
+<p><strong>4.2</strong> (5 Puntos)</p>
+<p>Generá un vector numérico de 24 valores simulados de una normal con media 20 y desvío 2 usando <code>rnorm</code> y nombralo <code>randnorm</code> y otro vector de la misma longitud generados con <code>rbinom</code> con probabilidad 0.5 y número de eventos posibles 10 nombrá al vector como <code>randbin</code>.</p>
+<p>Utilizando un <code>while</code> hacé la suma de los dos vectores (<code>randnorm</code> y <code>randbin</code>)</p>
+<p><strong>4.3</strong> (2.5 Puntos) En clase vimos distintas visualizaciones para variables categóricas y mencionamos como posibles el gráfico de barras y el gráficos de torta.</p>
+<p>¿Cuál es el argumento teórico para decir que es siempre preferible un gráfico de barras a uno de tortas para ver la distribución de una variable categórica?</p>
+<p><strong>4.4</strong> (2.5 Puntos)</p>
+<p>¿Porqué es necesario utilizar <code>aspect.ratio = 1</code> en un diagrama de dispersión?</p>
+<p><strong>4.5</strong> (2.5 Puntos)</p>
+<p>¿Con tus palabras definí qué es la investigación reproducible y mencioná alguna herramienta que lo facilita y porqué?</p>
+<p><strong>4.6</strong> (2.5 Puntos)</p>
+<p>¿Con tus palabras definí qué es la ciencia de datos y qué rol tiene la estadística en ella?</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,9 @@
+# Carpetas creadas por Quarto y Pandoc
+/.quarto/
+*_files/
+
+# Archivos del sistema
+.DS_Store
+
+# Historial de sesión de R
+.Rhistory

@@ -1,0 +1,17 @@
+# Tarea 2: Ciencia de Datos con R 2025
+
+## Entrega
+
+-   **La fecha limite de entrega es el 20 de junio de 2025.**
+
+-   Las respuestas deben estar en este mismo archivo `.qmd`, el contenido deber ser completamente reproducible, es decir, cada `chunk` debe de funcionar sin errores para poder replicar los resultados.
+
+-   No se aceptan archivos `.Rmd` o `.R` para la entrega. Solamente subir al repositorio el archivo `.qmd`con las respuestas.
+
+-   Cada respuesta del ejercicio debe estar en el chunk correspondiente, no borrar la etiqueta del chunk `#| label: ejercicio_XX`.
+
+-   Puede realizar pasos intermedios los que sean necesarios dentro del chunk pero debe de respetar el nombre del objeto final en el caso que se indique.
+
+-   Los gráficos deben ser guardados en objetos y luego impresos en el caso que se indique que lo almacenen en un objeto. En el caso que no se indique, pueden ser impresos directamente.
+
+-   Para comenzar la tarea deben de ir al siguiente link: [GitHub Classroom](). Una vez allí les va a pedir que indiquen su cuenta de GitHub y luego les va a crear un repositorio en su cuenta. Una vez creado el repositorio, deben de clonar el repositorio en su computadora y abrirlo con RStudio

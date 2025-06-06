@@ -52,15 +52,55 @@ Este ejercicio debe ser resuelto con R base en caso contrario se especificará e
 
 **2.1** (3 Puntos) Generá un `data.frame` con tres columnas nombradas como `var1`, `var2`, `var3`, y 12 filas siendo `var1` un vector numérico con posibles valores 2, 3 y 4, con más de una observación para cada posible valor, `var2` un factor con tres niveles, `alto`, `medio` y `bajo` con más de una observación para cada posible valor y `var3` un vector lógico Guardá el `data.frame` en un objeto llamado `datos`
 
+```{r}
+set.seed(123)
+datos <- data.frame(
+  var1 = sample(2:4, 12, replace = TRUE),
+  var2 = factor(sample(c("alto", "medio", "bajo"), 12, replace = TRUE),
+                levels = c("bajo", "medio", "alto")),
+  var3 = sample(c(TRUE, FALSE), 12, replace = TRUE)
+)
+datos
+```
+
 **2.2** (2 Puntos) Usando R base, seleccioná del conjunto datos la tercera columna en base a su nombre (`var3`)
+
+```{r}
+datos$var3
+```
 
 **2.3** (5 Puntos) Usando R base, seleccioná las filas de `datos` donde `var1` es 3, `var2` es medio y `var3` es FALSE.
 
+```{r}
+subset(datos, var1 == 3 & var2 == "medio" & var3 == FALSE)
+```
+
 **2.4** (3 Puntos) Usando R base, seleccioná las filas donde `var2` toma los valores medio y alto
+
+```{r}
+subset(datos, var2 %in% c("medio", "alto"))
+```
 
 **2.5** (2 Puntos) Hacer una tabla que cuente la cantidad de observaciones para cada combinación de `var2` y `var3`
 
+```{r}
+with(datos, table(var2, var3))
+```
+
 **2.6** (10 Puntos) Usando un for loop generá una nueva variable en el objeto `datos` llamada `var4` que valga 1 si (`var2` es alto y `var3` es TRUE) o (`var2` es medio y `var3` es TRUE) y vale 0 en otro caso
+
+```{r}
+datos$var4 <- NA
+for(i in seq_len(nrow(datos))){
+  if((datos$var2[i] == "alto" && datos$var3[i]) ||
+     (datos$var2[i] == "medio" && datos$var3[i])){
+    datos$var4[i] <- 1
+  } else {
+    datos$var4[i] <- 0
+  }
+}
+datos
+```
 
 # Ejercicio 3 (tidyverse)
 
@@ -72,15 +112,35 @@ Los datos que vamos a utilizar son del catálogo de datos abertos (https://catal
 
 Leer los datos `eutic.xlsx` usando el paquete `readxl` y `here` para asegurar la reproducibilidad en caso que lo necesites, guardá los datos en un objeto llamado `tic`.
 
+```{r}
+library(readxl)
+library(here)
+tic <- read_xlsx(here("Revision_2024", "Datos", "eutic.xlsx"))
+dim(tic)
+```
+
 **3.2** (2 Puntos)
 
 Vamos a trabajar con un subconjunto de los datos. Generá un nuevo objeto llamado `tic_red` que contenga las variables desde `C7` hasta `C9` y `C14_1` hasta `C14_18`(en el archivo `diccionario.xls` podés encontrar el nombre de todas las variables junto con su descripción). El conjunto de datos reducidos (`tic_red`) debe tener 2341 filas y 21 columnas.
+
+```{r}
+tic_red <- dplyr::select(tic, C7:C9, C14_1:C14_18)
+dim(tic_red)
+```
 
 De ahora en más trabajaremos con el conjunto de datos reducidos `tic_red`
 
 **3.3** (5 puntos)
 
 Usando funciones del paquete `ggplot2`, hacé un gráfico de barras que contenga la cantidad de personas que utilizó alguna vez internet (`C9`). Cambiá los ticks del eje `x` donde dice 1 debe decir `Si` y donde dice `2` debe decir `No` y en el resto de los ticks nada. Para esta parte debes notar que la variable `C9` es numérica. Cambiá la etiqueta del eje `y` a Cantidad de personas`y la del eje`x`a`Usa internet\`.
+
+```{r}
+library(ggplot2)
+ggplot(tic_red, aes(x = factor(C9))) +
+  geom_bar() +
+  scale_x_discrete(labels = c("1" = "Si", "2" = "No")) +
+  labs(x = "Usa internet", y = "Cantidad de personas")
+```
 
 **3.4** (7 Puntos) Esta pregunta tiene tres partes:
 
@@ -90,9 +150,33 @@ Usando funciones del paquete `ggplot2`, hacé un gráfico de barras que contenga
 4.  Guardá los datos modificados en `tic_reco`
 5.  Luego de todos los pasos anteriores repetí el gráfico de la Pregunta 3.3 con los datos `tic_reco` notando el paso que ya no es necesario luego de las tranformaciones realizadas.
 
+```{r}
+tic_reco <- tic_red |>
+  dplyr::rename(usoint = C9, sexo = C7) |>
+  dplyr::mutate(across(c(usoint, sexo), factor),
+                usoint = dplyr::recode(usoint, `1` = "Si", `2` = "No"),
+                sexo   = dplyr::recode(sexo, `1` = "Hombre", `2` = "Mujer"))
+
+ggplot(tic_reco, aes(x = usoint)) +
+  geom_bar() +
+  labs(x = "Usa internet", y = "Cantidad de personas")
+```
+
 **3.5** (4 puntos) Modifique el gráfico anterior para obtener las barras en términos de **proporción** en vez de cantidad modificando las leyendas de los ejes de forma apropiada.
 
+```{r}
+ggplot(tic_reco, aes(x = usoint)) +
+  geom_bar(position = "fill") +
+  labs(x = "Usa internet", y = "Proporción")
+```
+
 **3.6** (4 Puntos) Utilizando funciones de `dplyr` respondé ¿Qué proporción de personas que utilizan internet son Mujeres ?
+
+```{r}
+tic_reco |>
+  dplyr::filter(usoint == "Si") |>
+  dplyr::summarise(prop_mujer = mean(sexo == "Mujer"))
+```
 
 **3.7** (6 Punto)
 
@@ -100,9 +184,29 @@ Usando ggplot2 realiza una visualización apropiada a tu elección para ver la d
 
 A su vez usando funciones de `dplyr` respondé ¿Cuál es el promedio de edad de las personas que nunca usaron internet para cada sexo?
 
+```{r}
+# asumimos que la edad está en la variable C8
+tic_no_int <- tic_reco |>
+  dplyr::filter(usoint == "No")
+
+ggplot(tic_no_int, aes(x = sexo, y = C8, fill = sexo)) +
+  geom_violin(trim = FALSE) +
+  labs(x = "Sexo", y = "Edad", title = "Distribuci\u00f3n de edades seg\u00fan sexo")
+
+tic_no_int |>
+  dplyr::group_by(sexo) |>
+  dplyr::summarise(prom_edad = mean(C8, na.rm = TRUE))
+```
+
 **3.8** (5 Puntos)
 
 De forma similar al punto 3.4 re-codificá las variables `C14_1` hasta `C14_18`. Son 18 columnas, utiliza alguna función de `dplyr` que opere sobre múltiples columnas al mismo tiempo. Al revisar los meta datos este grupo de variables tiene la misma codificación, es decir que `1` sea `Si`, `2` sea `No` y `3` sea `No contesta`. Guardá el nuevo conjunto de datos en un objeto `final`.
+
+```{r}
+final <- tic_reco |>
+  dplyr::mutate(across(C14_1:C14_18,
+                       ~ dplyr::recode(., `1` = "Si", `2` = "No", `3` = "No contesta")))
+```
 
 \textbf{Nota: Con solo re-codificar la variable es suficiente, no es necesario transformarlo en factor aunque si querés podés hacerlo.}
 
@@ -114,6 +218,19 @@ De forma similar al punto 3.4 re-codificá las variables `C14_1` hasta `C14_18`.
 
 Generá una función `pedidos` que tenga como argumentos un vector numérico `cprod` cantidad de productos a comprar de cada tipo y un vector numérico `cdisp` con la cantidad disponible de dichos productos (ambos vectores del mismo largo) que devuelva 1 si se pude hacer el pedido y 0 en caso contrario. El pedido se puede realizar siempre que haya stock suficiente para cada producto, es decir que la cantidad disponible sea igual o mayor a la cantidad pedida. A su vez si alguno de los argumentos no es un vector numérico la función no debe ser evaluada y debe imprimir el mensaje "Argumento no numérico".
 
+```{r}
+pedidos <- function(cprod, cdisp){
+  if(!is.numeric(cprod) || !is.numeric(cdisp)){
+    message("Argumento no num\u00e9rico")
+    return(NULL)
+  }
+  if(all(cdisp >= cprod)) 1 else 0
+}
+
+pedidos(c(1,4,2), 1:3)
+pedidos(c("A","B"), 1:3)
+```
+
 Comprobá que el resultado de la función sea
 
 `pedidos(c(1,4,2), 1:3) = 0`
@@ -124,20 +241,42 @@ Comprobá que el resultado de la función sea
 
 Generá un vector numérico de 24 valores simulados de una normal con media 20 y desvío 2 usando `rnorm` y nombralo `randnorm` y otro vector de la misma longitud generados con `rbinom` con probabilidad 0.5 y número de eventos posibles 10 nombrá al vector como `randbin`.
 
+```{r}
+set.seed(123)
+randnorm <- rnorm(24, mean = 20, sd = 2)
+randbin  <- rbinom(24, size = 10, prob = 0.5)
+
+i <- 1
+suma <- numeric(length(randnorm))
+while(i <= length(randnorm)){
+  suma[i] <- randnorm[i] + randbin[i]
+  i <- i + 1
+}
+suma
+```
+
 Utilizando un `while` hacé la suma de los dos vectores (`randnorm` y `randbin`)
 
 **4.3** (2.5 Puntos) En clase vimos distintas visualizaciones para variables categóricas y mencionamos como posibles el gráfico de barras y el gráficos de torta.
 
 ¿Cuál es el argumento teórico para decir que es siempre preferible un gráfico de barras a uno de tortas para ver la distribución de una variable categórica?
 
+La percepción humana compara mejor longitudes que \u00e1ngulos, por lo que las barras permiten apreciar con mayor precisi\u00f3n las diferencias entre categor\u00edas.
+
 **4.4** (2.5 Puntos)
 
 ¿Porqué es necesario utilizar `aspect.ratio = 1` en un diagrama de dispersión?
+
+Garantiza que las unidades en ambos ejes tengan la misma escala y evita interpretaciones distorsionadas de la relaci\u00f3n entre variables.
 
 **4.5** (2.5 Puntos)
 
 ¿Con tus palabras definí qué es la investigación reproducible y mencioná alguna herramienta que lo facilita y porqué?
 
+La investigaci\u00f3n reproducible implica que un tercero pueda obtener los mismos resultados con los mismos datos y c\u00f3digo. Herramientas como Quarto o R Markdown facilitan este proceso porque integran narrativa y c\u00f3digo ejecutable en un mismo documento.
+
 **4.6** (2.5 Puntos)
 
 ¿Con tus palabras definí qué es la ciencia de datos y qué rol tiene la estadística en ella?
+
+La ciencia de datos se enfoca en extraer conocimiento a partir de datos combinando programaci\u00f3n, estad\u00edstica y dominio del problema. La estad\u00edstica aporta los m\u00e9todos para modelar la incertidumbre y validar los hallazgos.

@@ -81,6 +81,8 @@ Este informe sirve como insumo previo para diseñar estrategias de preprocesamie
 
 ## 1. Paneo Inicial y Diagnóstico de Calidad
 
+Realizamos un diagnóstico inicial del dataset `ames` cargado desde el paquete `{modeldata}`. Exploraremos su estructura, tipos de variables, presencia de valores faltantes (*missing values*), duplicados y codificaciones especiales.
+
 ```{r load_data}
 # Cargar el dataset ames
 data(ames)

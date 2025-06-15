@@ -1,7 +1,9 @@
 ---
 title: "Actividad Individual I"
 subtitle: "Ciencia de Datos con R"
-format: html
+format:
+  html:
+    self-contained: true
 editor: visual
 ---
 

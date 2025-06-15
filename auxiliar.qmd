@@ -1,7 +1,9 @@
 ---
 title: "Exploración Auxiliar de gapminder"
 subtitle: "Análisis complementario para interpretación de resultados"
-format: html
+format:
+  html:
+    self-contained: true
 editor: visual
 ---
 
@@ -897,7 +899,7 @@ g1
 g2
 ```
 
-## ✅ **Alternativa 7: Split‐violin de `gdpPercap` vs `lag(gdpPercap)` por continente
+## ✅ \*\*Alternativa 7: Split‐violin de `gdpPercap` vs `lag(gdpPercap)` por continente
 
 ```{r}
 # Preparo datos con lag de 1 año por país
@@ -980,15 +982,15 @@ data_mosaic %>%
 
 **Bubble chart**:
 
-* **x** = `gdpPercap` (escala log),
-* **y** = `lifeExp`,
-* **size** = `pop`,
-* **color** = `continent`,
-* **frame** = `year`.
+-   **x** = `gdpPercap` (escala log),
+-   **y** = `lifeExp`,
+-   **size** = `pop`,
+-   **color** = `continent`,
+-   **frame** = `year`.
 
 Esto replica el clásico *Gapminder* interactivo. Se puede exportar como GIF (gganimate) o mantenerlo interactivo (plotly).
 
----
+------------------------------------------------------------------------
 
 ## Opción A — `gganimate` (GIF)
 
@@ -1015,7 +1017,7 @@ gap_bubbles <- gapminder %>%
 animate(gap_bubbles)
 ```
 
----
+------------------------------------------------------------------------
 
 ## Opción B — `plotly` (HTML interactivo)
 

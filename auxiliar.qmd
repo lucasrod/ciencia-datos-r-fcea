@@ -79,7 +79,7 @@ A continuación se sintetizan los principales hallazgos:
 
 Este informe sirve como insumo previo para diseñar estrategias de preprocesamiento y selección de variables en el modelado predictivo.
 
-## 1. Carga y estructura de los datos
+## 1. Paneo Inicial y Diagnóstico de Calidad
 
 ```{r load_data}
 # Cargar el dataset ames

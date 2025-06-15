@@ -378,43 +378,43 @@ ames_data %>%
 
 ### Hallazgos principales
 
-1.  **Variable respuesta (Sale_Price)**:
+-   **Variable respuesta (Sale_Price)**:
     -   Distribución asimétrica a la derecha, con una cola larga hacia valores altos
     -   Coeficiente de variación del XX% indica una variabilidad moderada en los precios
     -   La transformación logarítmica mejora significativamente la normalidad de la distribución
-2.  **Variables numéricas más relevantes**:
+-   **Variables numéricas más relevantes**:
     -   `Overall_Qual`, `Gr_Liv_Area`, `Garage_Cars`, `Garage_Area` y `Total_Bsmt_SF` muestran las correlaciones más fuertes con `Sale_Price`
     -   Se observan relaciones aproximadamente lineales con la variable respuesta
-3.  **Variables categóricas importantes**:
+-   **Variables categóricas importantes**:
     -   `Neighborhood` muestra una gran variabilidad en los precios entre barrios
     -   `Overall_Qual` y `Kitchen_Qual` tienen una fuerte relación con el precio de venta
     -   La calidad de los materiales y el acabado (`Exter_Qual`, `Bsmt_Qual`) también son predictores importantes
-4.  **Valores faltantes**:
+-   **Valores faltantes**:
     -   Varias variables tienen valores faltantes que deberán ser manejados
     -   Algunas variables como `Pool_QC`, `Misc_Feature` y `Alley` tienen una alta proporción de valores faltantes
-5.  **Valores atípicos**:
+-   **Valores atípicos**:
     -   Se identificaron XX valores atípicos en `Sale_Price` (aproximadamente YY% de los datos)
     -   Estos valores podrían ser casas de lujo o errores de medición
 
 ### Recomendaciones para el modelado
 
-1.  **Preprocesamiento**:
+-   **Preprocesamiento**:
     -   Aplicar transformación logarítmica a `Sale_Price` para manejar la asimetría
     -   Considerar la eliminación o imputación de variables con alta proporción de valores faltantes
     -   Estandarizar o normalizar las variables numéricas
     -   Codificar las variables categóricas (one-hot encoding o target encoding)
-2.  **Selección de características**:
+-   **Selección de características**:
     -   Incluir las variables más correlacionadas identificadas en el análisis
     -   Considerar la creación de características derivadas (ej: área total = área del primer piso + área del segundo piso)
     -   Evaluar la multicolinealidad entre predictores
-3.  **Validación del modelo**:
+-   **Validación del modelo**:
     -   Utilizar validación cruzada para una mejor estimación del rendimiento
     -   Considerar métricas robustas como el error absoluto mediano (MAE) además del RMSE
     -   Evaluar el rendimiento en diferentes rangos de precios
-4.  **Manejo de valores atípicos**:
+-   **Manejo de valores atípicos**:
     -   Evaluar el impacto de incluir/excluir valores atípicos
     -   Considerar modelos robustos a valores atípicos
-5.  **Consideraciones adicionales**:
+-   **Consideraciones adicionales**:
     -   Evaluar interacciones entre variables (ej: efecto del barrio en la relación entre área y precio)
     -   Considerar efectos no lineales en las relaciones
     -   Evaluar la importancia de las variables en el modelo final

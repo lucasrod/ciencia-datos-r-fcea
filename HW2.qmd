@@ -20,7 +20,14 @@ El objetivo de esta tarea es aplicar técnicas de **aprendizaje supervisado** ut
 
 ```{r}
 #| label: ejercicio_111
+# Cargar paquetes necesarios
+library(tidyverse)
+library(tidymodels)
+library(modeldata)
+library(vip)
 
+# Cargar el dataset ames y convertirlo en tibble
+ames_data <- as_tibble(ames)
 ```
 
 1.1.2. Utilizar `Sale_Price` como variable respuesta. Guarda la formula como `formula_ames`.

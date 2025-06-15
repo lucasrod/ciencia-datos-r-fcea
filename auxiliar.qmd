@@ -6,9 +6,13 @@ format:
     self-contained: true
     toc: true
     toc-depth: 2
-    code-fold: false
+    code-fold: true
     code-tools: true
     code-summary: "Mostrar código"
+execute:
+  echo:    true
+  warning: true
+  message: false
 editor: visual
 ---
 
@@ -24,12 +28,56 @@ library(patchwork)  # Para combinar gráficos
 library(ggthemes)   # Temas para ggplot2
 library(e1071)      # Para asimetría y curtosis
 
+# Reproducibilidad
+set.seed(42)
+
 # Configuración general
 theme_set(theme_minimal())
 options(dplyr.summarise.inform = FALSE)
 ```
 
 # Análisis Exploratorio: Dataset Ames
+
+## 0. Resumen
+
+Este análisis exploratorio tiene como objetivo complementar el trabajo realizado en `HW2.qmd`, proporcionando una caracterización del dataset `ames` antes de aplicar modelos supervisados. Se identifican patrones relevantes en la variable respuesta `Sale_Price`, se evalúan relaciones clave con las variables predictoras y se diagnostica la calidad general de los datos.
+
+A continuación se sintetizan los principales hallazgos:
+
+-   **Distribución de la variable objetivo (`Sale_Price`)**: presenta asimetría positiva significativa, con valores atípicos hacia la derecha. La transformación logarítmica mejora sustancialmente la normalidad.
+
+-   **Estadísticos claves de `Sale_Price`**:
+
+    -   Mediana: `XX`
+    -   Media: `XX`
+    -   Coeficiente de variación (CV): `XX%`
+    -   Asimetría: `XX`
+    -   Curtosis: `XX`
+
+-   **Valores atípicos (outliers)**:
+
+    -   Se detectaron `XX` observaciones (≈ `XX%`) fuera del rango intercuartílico.
+    -   Se recomienda evaluar su impacto durante la validación del modelo.
+
+-   **Calidad general del dataset**:
+
+    -   Total de observaciones: `2,930`
+    -   Total de variables: `74`
+    -   Variables con valores faltantes: `X` (ej. `Lot_Frontage`, `Alley`, etc.)
+    -   No se detectan filas duplicadas por ID, aunque algunas variables presentan codificación especial de ausencia (ceros como "No aplica").
+
+-   **Variables predictoras destacadas**:
+
+    -   Las variables numéricas más correlacionadas con `Sale_Price` son: `Gr_Liv_Area`, `Garage_Area`, `Total_Bsmt_SF`, entre otras.
+    -   Se observa colinealidad entre ciertos predictores relacionados con superficie.
+
+-   **Sugerencias para el modelado**:
+
+    -   Transformar `Sale_Price` mediante `log()` para mejorar los supuestos de normalidad.
+    -   Evaluar interacciones no lineales y colinealidad entre variables.
+    -   Considerar ingeniería de características que reflejen combinaciones relevantes (ej. superficie total habitable).
+
+Este informe sirve como insumo previo para diseñar estrategias de preprocesamiento y selección de variables en el modelado predictivo.
 
 ## 1. Carga y estructura de los datos
 

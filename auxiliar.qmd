@@ -19,8 +19,8 @@ editor: visual
 ```{r setup, message=FALSE}
 # Cargar paquetes necesarios
 library(tidyverse)
-library(tidymodels)
-library(modeldata)
+library(tidymodels) # ML
+library(modeldata)  # Ames housing dataset
 library(skimr)      # Para resúmenes estadísticos
 library(corrplot)   # Para matrices de correlación
 library(GGally)     # Para pair plots avanzados
@@ -38,7 +38,7 @@ options(dplyr.summarise.inform = FALSE)
 
 # Análisis Exploratorio: Dataset Ames
 
-## 0. Resumen
+## Resumen
 
 Este análisis exploratorio tiene como objetivo complementar el trabajo realizado en `HW2.qmd`, proporcionando una caracterización del dataset `ames` antes de aplicar modelos supervisados. Se identifican patrones relevantes en la variable respuesta `Sale_Price`, se evalúan relaciones clave con las variables predictoras y se diagnostica la calidad general de los datos.
 
@@ -79,7 +79,7 @@ A continuación se sintetizan los principales hallazgos:
 
 Este informe sirve como insumo previo para diseñar estrategias de preprocesamiento y selección de variables en el modelado predictivo.
 
-## 1. Paneo Inicial y Diagnóstico de Calidad
+## Paneo Inicial y Diagnóstico de Calidad
 
 Realizamos un diagnóstico inicial del dataset `ames` cargado desde el paquete `{modeldata}`. Exploraremos su estructura, tipos de variables, presencia de valores faltantes (*missing values*), duplicados y codificaciones especiales.
 
@@ -87,14 +87,25 @@ Realizamos un diagnóstico inicial del dataset `ames` cargado desde el paquete `
 # Cargar el dataset ames
 data(ames)
 ames_data <- as_tibble(ames)
+```
 
-# Mostrar estructura inicial
+### Dimensiones y estructura
+
+```{r data_dimensions}
+# Dimensiones básicas
+n_obs <- nrow(ames_data)
+n_vars <- ncol(ames_data)
+
+cat("Número de observaciones:", n_obs, "\n")
+cat("Número de variables:", n_vars, "\n")
+
+# Glimpse general
 glimpse(ames_data)
 ```
 
-## 2. Análisis de la variable respuesta: Sale_Price
+## Análisis de la variable respuesta: Sale_Price
 
-### 2.1 Resumen estadístico
+### Resumen estadístico
 
 ```{r target_summary}
 # Resumen estadístico de Sale_Price
@@ -113,7 +124,7 @@ cat("Asimetría:", round(skewness_value, 2), "\n")
 cat("Curtosis:", round(kurtosis_value, 2), "\n")
 ```
 
-### 2.2 Visualización de la distribución
+### Visualización de la distribución
 
 ```{r target_distribution}
 # Histograma con curva de densidad
@@ -153,7 +164,7 @@ p3 <- ames_data %>%
 (p1 + p2) / p3 + plot_layout(heights = c(2, 1))
 ```
 
-### 2.3 Transformación logarítmica
+### Transformación logarítmica
 
 ```{r log_transform}
 # Aplicar transformación logarítmica
@@ -187,11 +198,11 @@ p5 <- ggplot(ames_data, aes(sample = log_Sale_Price)) +
 p4 + p5
 ```
 
-## 3. Análisis de variables predictoras
+## Análisis de variables predictoras
 
-### 3.1 Variables numéricas
+### Variables numéricas
 
-#### 3.1.1 Correlación con variables numéricas
+#### Correlación con variables numéricas
 
 ```{r numeric_correlation}
 # Seleccionar solo variables numéricas
@@ -226,7 +237,7 @@ corrplot.mixed(cor(numeric_vars[, c("Sale_Price", head(cor_with_target$Variable,
                title = "Matriz de correlación - Top 10 variables")
 ```
 
-#### 3.1.2 Relaciones bivariadas con las variables más correlacionadas
+#### Relaciones bivariadas con las variables más correlacionadas
 
 ```{r top_correlations}
 # Función para crear scatter plots con línea de tendencia
@@ -257,9 +268,9 @@ wrap_plots(scatter_plots, ncol = 2) +
                   theme = theme(plot.title = element_text(hjust = 0.5, size = 12)))
 ```
 
-### 3.2 Variables categóricas
+### Variables categóricas
 
-#### 3.2.1 Análisis de variables categóricas importantes
+#### Análisis de variables categóricas importantes
 
 ```{r categorical_analysis}
 #| eval: false
@@ -291,7 +302,7 @@ wrap_plots(cat_plots, ncol = 2) +
                   theme = theme(plot.title = element_text(hjust = 0.5, size = 14)))
 ```
 
-## 4. Análisis de valores faltantes
+## Análisis de valores faltantes
 
 ```{r missing_values}
 # Función para calcular porcentaje de valores faltantes por columna
@@ -325,7 +336,7 @@ if(nrow(missing_data) > 0) {
 }
 ```
 
-## 5. Análisis de valores atípicos
+## Análisis de valores atípicos
 
 ```{r outliers_analysis}
 # Función para identificar valores atípicos usando el método IQR
@@ -363,9 +374,9 @@ ames_data %>%
   theme(legend.position = "bottom")
 ```
 
-## 6. Conclusiones y recomendaciones para el modelado
+## Conclusiones y recomendaciones para el modelado
 
-### 6.1 Hallazgos principales
+### Hallazgos principales
 
 1.  **Variable respuesta (Sale_Price)**:
     -   Distribución asimétrica a la derecha, con una cola larga hacia valores altos
@@ -385,7 +396,7 @@ ames_data %>%
     -   Se identificaron XX valores atípicos en `Sale_Price` (aproximadamente YY% de los datos)
     -   Estos valores podrían ser casas de lujo o errores de medición
 
-### 6.2 Recomendaciones para el modelado
+### Recomendaciones para el modelado
 
 1.  **Preprocesamiento**:
     -   Aplicar transformación logarítmica a `Sale_Price` para manejar la asimetría

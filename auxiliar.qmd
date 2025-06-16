@@ -6,7 +6,7 @@ format:
     self-contained: true
     toc: true
     toc-depth: 2
-    code-fold: true
+    code-fold: false
     code-tools: true
     code-summary: "Mostrar código"
 execute:
@@ -21,7 +21,7 @@ editor: visual
 library(tidyverse)
 library(tidymodels) # ML
 library(modeldata)  # Ames housing dataset
-library(skimr)      # Para resúmenes estadísticos
+library(skimr)      # Análisis descriptivo
 library(corrplot)   # Para matrices de correlación
 library(GGally)     # Para pair plots avanzados
 library(patchwork)  # Para combinar gráficos
@@ -44,7 +44,7 @@ Este análisis exploratorio tiene como objetivo complementar el trabajo realizad
 
 A continuación se sintetizan los principales hallazgos:
 
--   **Distribución de la variable objetivo (`Sale_Price`)**: presenta asimetría positiva significativa, con valores atípicos hacia la derecha. La transformación logarítmica mejora sustancialmente la normalidad.
+-   **Distribución de la variable objetivo (`Sale_Price`)**: Presenta una cola larga a la derecha, lo que sugiere que unas pocas viviendas tienen precios significativamente más altos que la mayoría. Esta observación, consistente con la exploración hecha en Kaggle, motiva el uso de transformaciones como `log(Sale_Price)` para estabilizar la varianza y mejorar la aproximación a la normalidad antes de aplicar modelos lineales.
 
 -   **Estadísticos claves de `Sale_Price`**:
 
@@ -89,19 +89,302 @@ data(ames)
 ames_data <- as_tibble(ames)
 ```
 
-### Dimensiones y estructura
+### Estructura
 
-```{r data_dimensions}
-# Dimensiones básicas
-n_obs <- nrow(ames_data)
-n_vars <- ncol(ames_data)
-
-cat("Número de observaciones:", n_obs, "\n")
-cat("Número de variables:", n_vars, "\n")
-
-# Glimpse general
+```{r glimpse}
 glimpse(ames_data)
 ```
+
+### EDA Univariado
+
+Diferenciamos entre variables numéricas y categóricas, y para cada tipo se presentan estadísticos de resumen, distribución, y niveles o codificaciones relevantes, útil para detectar problemas tempranos.
+
+#### Clase de variables
+```{r class_types}
+# Conteo de clases
+ames_data %>%
+  summarise(across(everything(), class)) %>%
+  pivot_longer(cols = everything(), names_to = "n_variables", values_to = "class") %>%
+  count(class, name = "n_variables") %>%
+  knitr::kable(caption = "Distribución de clases de variables")
+```
+
+> Nota: En tipos primitivos de R `numeric` --> `double`, `factor` --> `integer`.
+
+#### Tipo de variable para el análisis
+
+Factores vs numéricos.
+
+```{r skim_types}
+skim_summary <- skim(ames_data)
+skim_summary %>%
+  count(skim_type, name = "n_variables") %>%
+  knitr::kable(caption = "Distribución de tipo de variables (skim_type)")
+```
+
+##### Variables categóricas
+
+Mostramos la cantidad de categorías y las categorías más observadas de las variables de tipo factor:
+
+```{r cat_skim_summary}
+skim_summary %>%
+  filter(skim_type == "factor") %>%
+  arrange(desc(factor.n_unique)) %>%
+  select(
+    variable    = skim_variable,
+    n_levels    = factor.n_unique,
+    top_counts  = factor.top_counts,
+  ) %>%
+  knitr::kable(
+    caption = "Variables categóricas: niveles y counts principales"
+  )
+```
+
+```{r cat_levels_distribution}
+
+# Cardinalidad de cada factor desde skim_summary
+cardinality <- skim_summary %>%
+  filter(skim_type == "factor") %>%
+  select(
+    variable = skim_variable,
+    n_levels = factor.n_unique
+  )
+
+# Conteo y proporciones por nivel
+factor_vars <- cardinality$variable
+
+prop_cat <- map_dfr(factor_vars, function(var) {
+  ames_data %>%
+    count(level = .data[[var]]) %>%
+    mutate(
+      variable = var,
+      prop     = percent(n / sum(n), accuracy = 0.1)
+    )
+})
+
+# Unir cardinalidad ordenando por n_levels (desc) y luego por n (desc)
+prop_cat %>%
+  left_join(cardinality, by = "variable") %>%
+  arrange(
+    desc(n_levels),  # se usa para ordenar, pero no se mostrará
+    variable,
+    desc(n)
+  ) %>%
+  select(variable, level, n, prop) %>%  # acá ya no incluimos n_levels
+  knitr::kable(
+    caption = "Distribución de niveles de variables categóricas"
+  )
+```
+
+##### Variables numéricas
+
+Calculamos medidas de tendencia central, posición, dispersión y dirección de asimetría (`media - mediana`):
+
+```{r num_skim_summary}
+skim_summary %>%
+  filter(skim_type == "numeric") %>%
+  transmute(
+    variable = skim_variable,
+    mean     = numeric.mean,
+    sd       = numeric.sd,
+    rel_skew = abs(numeric.mean - numeric.p50) / numeric.sd, # asimetría relativa a la dispersión
+    asimetría = case_when(
+      is.na(rel_skew)             ~ "indefinida",
+      rel_skew < 0.2              ~ "Aprox. simétrica", # Se sugiere disminuir el umbral
+      numeric.mean > numeric.p50  ~ "Positiva",
+      TRUE                        ~ "Negativa"
+    ),
+    histograma = numeric.hist,
+    p0       = numeric.p0,
+    p25      = numeric.p25,
+    median   = numeric.p50,
+    p75      = numeric.p75,
+    p100     = numeric.p100
+  ) %>%
+  knitr::kable(
+    digits = 2,
+    caption = "Variables numéricas"
+  )
+```
+
+> Nota: `rel_skew` es una aproximación útil para comparar diferencias relativas entre media y mediana entre distribuciones con escalas o unidades distintas. Sin embargo, **no siempre refleja adecuadamente la estructura de la distribución**. Por ejemplo:
+>
+> * En `Lot_Area`, el valor de `rel_skew` es bajo a pesar de una asimetría real muy alta, ya que **la alta desviación estándar atenúa el impacto de colas extremas**.
+> * En `Kitchen_AbvGr`, la aparente simetría se debe a un **soporte discreto y reducido** con una moda dominante, lo que mantiene la media y mediana cercanas aunque exista asimetría.
+> * En `BsmtFin_SF_1`, se observa lo opuesto: la diferencia entre media y mediana parece indicar asimetría, pero se debe a **modas discretas separadas** dentro de una distribución que en realidad tiene colas relativamente simétricas.
+>
+> Por ello, se complementa el análisis con el coeficiente de asimetría (`skewness`) y otras métricas robustas.
+
+
+##### EDA numérico extendido
+
+Variables numéricas con coeficiente de variación, rango intercuartíl, asimetría (exacta), curtosis y sugerencia de transformación.
+
+```{r eval = FALSE}
+skim_summary %>% rowwise() %>% mutate(x = list(ames_data[[skim_variable]])) %>% glimpse()
+```
+
+```{r extended_numeric_eda}
+library(robustbase) # para medcouple (asimetría robusta)
+# Variables numéricas con EDA extendido
+numeric_eda <- skim_summary %>%
+  filter(skim_type == "numeric") %>%
+  # Para poder usar e1071 necesitamos extraer cada vector numérico de las variables
+  rowwise() %>%
+  mutate(
+    x = list(ames_data[[skim_variable]]), # vector original de cada variable
+    cv = numeric.sd / numeric.mean,       # coef. de variación
+    iqr = numeric.p75 - numeric.p25,      # rango IQ
+    skewness = skewness(x),               # asimetría
+    medcouple = mc(x), # asimetría robusta
+    kurtosis = kurtosis(x),               # curtosis
+    prop_outliers = if_else(iqr == 0, NA_real_,
+                        mean(x < (numeric.p25 - 1.5*iqr) |
+                        x > (numeric.p75 + 1.5*iqr), 
+                        na.rm = TRUE)), # outliers regla Tukey
+    transform_rec = case_when(
+      skewness < 0 ~ "ninguna: asimetría negativa",
+      !all(x >= 0, na.rm = TRUE) ~ "ninguna: valores negativos",
+      all(x > 0,  na.rm = TRUE) & skewness > 1.5 ~ "log",
+      all(x > 0,  na.rm = TRUE) & skewness > 0.5 ~ "Box-Cox (evaluar)",
+      all(x >= 0, na.rm = TRUE) & skewness > 0.5 ~ "log(x+1) o sqrt: contiene ceros",
+      TRUE            ~ "ninguna"
+    )
+  ) %>%
+  ungroup() %>%
+  transmute(
+    variable        = skim_variable,
+    mean            = numeric.mean,
+    sd              = numeric.sd,
+    cv,
+    skewness        = round(skewness, 2),
+    medcouple       = round(medcouple, 2),
+    kurtosis        = round(kurtosis, 2),
+    pct_outliers    = percent(prop_outliers, accuracy = 0.1),
+    iqr,
+    histograma      = numeric.hist,
+    transform_rec   = transform_rec
+  )
+
+  knitr::kable(
+    numeric_eda,
+    digits = 2,
+    caption = "Análisis extendido de variables numéricas"
+  )
+
+```
+
+> **Nota sobre las medidas de asimetría:**
+> En este análisis se reportan dos métricas complementarias para evaluar la asimetría de las variables numéricas:
+>
+> * `skewness` corresponde al **coeficiente muestral de asimetría ($g_1$)**, una medida **paramétrica** que estima la forma de la distribución en función del sesgo respecto a la media (tercer momento muestral). Es sensible a valores atípicos (*outliers*) y capta la **asimetría en las colas**.
+> * `medcouple`: es un **estadístico no paramétrico y robusto** que mide la asimetría del “cuerpo central" de la distribución, sin verse afectado por outliers.
+>
+> Dado que ambas métricas responden a diferentes aspectos de la forma de la distribución, pueden arrojar resultados aparentemente contradictorios:
+>
+> * En variables con muchos ceros y algunos valores extremos altos (como `Pool_Area` o `Misc_Val`), el `medcouple` puede ser **negativo** (indicando que la masa principal está a la derecha), mientras que el `skewness` será **positivo** por la presencia de colas largas hacia la derecha.
+>
+> * En otros casos, como `Kitchen_AbvGr`, aunque la media y la mediana están alineadas (dando idea de simetría), el `skewness` puede ser alto por la naturaleza discreta de la variable (muchos 1 y pocos valores mayores).
+>
+> Por ello, **es recomendable interpretar ambas medidas en conjunto**:
+> `skewness` capta simetría global, incluyendo extremos, y `medcouple` resume la simetría de la parte mas densa de la distribución.
+> Usarlas juntas da una visión más completa sobre la simetría de cada variable.
+
+#### Valores faltantes (*missing values*)
+
+```{r missing_values}
+# Resumen de NAs
+n_obs <- nrow(ames_data)
+na_summary <- ames_data %>%
+  summarise(across(everything(), ~ sum(is.na(.)))) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "n_na") %>%
+  filter(n_na > 0) %>%
+  mutate(pct = round(100 * n_na / n_obs, 2)) %>%
+  arrange(desc(pct)) %>%
+  knitr::kable(caption = "Variables con valores faltantes")
+```
+
+```{r}
+cat("Número de variables con NA:", nrow(na_summary), "\n")
+```
+
+> No se detectan missing values explícitos en el dataset.
+
+#### Ausencia estructural en variables categóricas
+
+> Variables numéricas como `Garage_Area` o `MasVnr_Area` pueden contener ceros que no representan valores cuantitativos reales, sino ausencia de la característica (p.ej., `Mas_Vnr_Area = 0` cuando `Mas_Vnr_Type == "None"`). Este detalle también se resalta en notebooks de Kaggle, donde se señala que “el valor 0 puede estar indicando que el criterio no aplicaba”. Prestar especial atención al imputar o escalar estos ceros.
+
+```{r special_coding}  
+# Ejemplo: proporción de ceros en Mas_Vnr_Area cuando hay "None"
+# Deberíamos hacer esto para todas las variables numéricas que contengan ceros quizas?
+ames_data %>%
+  filter(Mas_Vnr_Type == "None") %>%
+  summarise(p_zeros = mean(Mas_Vnr_Area == 0)) %>%
+  mutate(p_zeros = round(p_zeros * 100, 2)) %>%
+  knitr::kable(caption = "Proporción de ceros esperados por codificación")
+```
+
+```{r}
+cat_vars <- ames_data %>% select(where(is.factor))
+
+none_levels <- c("None", "No", "No_Alley_Access", "No_Pool", "No_Fence", "No_Garage", "No_Basement", "No_Shed", "No_")
+
+none_summary <- cat_vars %>%
+  summarise(across(everything(), ~ sum(. %in% none_levels))) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "n_none") %>%
+  filter(n_none > 0) %>%
+  mutate(pct = round(100 * n_none / n_obs, 2)) %>%
+  arrange(desc(pct))
+
+knitr::kable(none_summary, caption = "Variables categóricas con niveles que indican ausencia estructural")
+```
+
+#### Ceros estructurales en variables numéricas
+
+```{r}
+cat_vars <- ames_data %>% select(where(is.factor))
+# Contar observaciones con valor "None" o "No_*"
+none_summary <- cat_vars %>%
+  summarise(across(everything(), ~ sum(. %in% c("None", "No", "No_Alley_Access", "No_Pool", "No_Fence", "No_Garage", "No_Basement", "No_Shed", "No_"))) ) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "n_none") %>%
+  filter(n_none > 0) %>%
+  mutate(pct = round(100 * n_none / nrow(ames_data), 2)) %>%
+  arrange(desc(pct))
+
+none_summary %>%
+  knitr::kable(caption = "Variables categóricas con niveles 'None' o similares (ausencia estructural)")
+```
+
+```{r}
+ames_data %>%
+  filter(Mas_Vnr_Type == "None") %>%
+  summarise(p_zeros = mean(Mas_Vnr_Area == 0, na.rm = TRUE)) %>%
+  mutate(p_zeros = round(p_zeros * 100, 2)) %>%
+  knitr::kable(caption = "Proporción de ceros estructurales en Mas_Vnr_Area cuando Mas_Vnr_Type = 'None'")
+```
+
+```{r}
+ames_data %>%
+  filter(Garage_Type == "None") %>%
+  summarise(
+    p_zero_area = mean(Garage_Area == 0, na.rm = TRUE),
+    p_zero_cars = mean(Garage_Cars == 0, na.rm = TRUE)
+  ) %>%
+  mutate(across(everything(), ~ round(.x * 100, 2))) %>%
+  knitr::kable(caption = "Proporción de ceros estructurales en variables de garage cuando Garage_Type = 'None'")
+```
+
+#### Duplicados
+
+No existe variable `Id` en el dataset, por lo que no se puede validar unicidad de filas por identificador. Validaremos unicidad de filas por fila completa.
+
+```{r duplicates}
+# Validar unicidad de Id si existiera o por fila completa
+n_duplicadas <- ames_data %>% duplicated() %>% sum()
+cat("Número de filas duplicadas:", n_duplicadas, "\n")
+```
+
+> No se detectan filas duplicadas exactas.
 
 ## Análisis de la variable respuesta: Sale_Price
 
@@ -304,7 +587,7 @@ wrap_plots(cat_plots, ncol = 2) +
 
 ## Análisis de valores faltantes
 
-```{r missing_values}
+```{r cat_missing_values}
 # Función para calcular porcentaje de valores faltantes por columna
 missing_summary <- function(data) {
   data %>%

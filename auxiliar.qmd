@@ -365,7 +365,7 @@ Para un listado exhaustivo de todos los niveles de las variables categóricas, v
 
 ##### Codificaciones de ausencia
 
-Las variables categóricas que indican ausencia estructural son aquellas que el data entry representa la ausencia de la característica usando strings como "None" o "No_*".
+Las variables categóricas que indican ausencia estructural son aquellas que el data entry representa la ausencia de la característica usando strings como "None" o "No\_\*".
 
 ```{r}
 # Niveles que indican ausencia
@@ -709,45 +709,43 @@ Este análisis se encuentra integrado dentro de la sección **"Paneo Inicial y D
     -   Estos valores podrían ser casas de lujo o errores de medición
 
 ### Recomendaciones de preprocesamiento
-> Todas las acciones indicadas aquí deben implementarse en la _recipe_ preliminar o en pasos de ingeniería previos al ajuste de modelos en `HW2.qmd`.
+
+> Todas las acciones indicadas aquí deben implementarse en la *recipe* preliminar o en pasos de ingeniería previos al ajuste de modelos en `HW2.qmd`.
 
 #### Conversión de variables discretas a factores
 
-| Variable            | Cardinalidad | Acción recomendada | Comentario |
-|---------------------|-------------:|--------------------|------------|
-| Bsmt_Half_Bath      | 3            | `factor(ordered = TRUE)` | ordinal (0–2) |
-| Half_Bath           | 3            | `factor(ordered = TRUE)` | ordinal (0–2) |
-| Bsmt_Full_Bath      | 4            | `factor(ordered = TRUE)` | ordinal (0–3) |
-| Kitchen_AbvGr       | 4            | `factor()`          | recuento discreto |
-| Full_Bath           | 5            | `factor(ordered = TRUE)` | |
-| Fireplaces          | 5            | `factor()`          | muchos ceros |
-| Year_Sold           | 5            | `factor(ordered = TRUE)` | efecto temporal |
-| Garage_Cars         | 6            | `factor(ordered = TRUE)` | 0–5 autos |
-| BsmtFin_SF_1        | 8            | _depende del modelo_ | revisar linealidad |
-| Bedroom_AbvGr       | 8            | _factor_ **o** numérica | distribución sesgada |
-| Mo_Sold             | 12           | `factor(ordered = TRUE)` | estacionalidad |
-| TotRms_AbvGrd       | 14           | _factor_ **si** no lineal | revisión visual |
+| Variable       | Cardinalidad | Acción recomendada        | Comentario           |
+|--------------------|----------------:|-------------------|-----------------|
+| Bsmt_Half_Bath |            3 | `factor(ordered = TRUE)`  | ordinal (0–2)        |
+| Half_Bath      |            3 | `factor(ordered = TRUE)`  | ordinal (0–2)        |
+| Bsmt_Full_Bath |            4 | `factor(ordered = TRUE)`  | ordinal (0–3)        |
+| Kitchen_AbvGr  |            4 | `factor()`                | recuento discreto    |
+| Full_Bath      |            5 | `factor(ordered = TRUE)`  |                      |
+| Fireplaces     |            5 | `factor()`                | muchos ceros         |
+| Year_Sold      |            5 | `factor(ordered = TRUE)`  | efecto temporal      |
+| Garage_Cars    |            6 | `factor(ordered = TRUE)`  | 0–5 autos            |
+| BsmtFin_SF_1   |            8 | *depende del modelo*      | revisar linealidad   |
+| Bedroom_AbvGr  |            8 | *factor* **o** numérica   | distribución sesgada |
+| Mo_Sold        |           12 | `factor(ordered = TRUE)`  | estacionalidad       |
+| TotRms_AbvGrd  |           14 | *factor* **si** no lineal | revisión visual      |
 
 #### Reagrupación de niveles en categóricas
 
-- **Alta cardinalidad**  
-  - `Neighborhood` (28 niveles) → reagrupar niveles \< 1 % en “Otros”.  
-  - `Exterior_1st`/`Exterior_2nd` (16 niveles) → agrupar por material: `Vinyl`, `Wood`, `Brick`, `Otros`.
-
-- **Categorías infrecuentes**  
-  - Ej.: `Landmark` (`Neighborhood`), `VWD` (`Sale_Type`) ⇒ “Other”.
-
-- **Variables binarias o quasi-binarias**  
-  - `Central_Air`, `Street`, `Utilities`, `Pool_QC`, `Alley`, `Fence`, `Paved_Drive` ⇒ recodificar en lógicos `0/1`.
-
-- **Agrupaciones por dominio**  
-  - `MS_SubClass` → `OneStory` / `TwoStory` / `SplitLevel`.  
-  - `House_Style` → `One_Story` / `Two_Story` / `Otros`.
+-   **Alta cardinalidad**
+    -   `Neighborhood` (28 niveles) → reagrupar niveles \< 1 % en “Otros”.\
+    -   `Exterior_1st`/`Exterior_2nd` (16 niveles) → agrupar por material: `Vinyl`, `Wood`, `Brick`, `Otros`.
+-   **Categorías infrecuentes**
+    -   Ej.: `Landmark` (`Neighborhood`), `VWD` (`Sale_Type`) ⇒ “Other”.
+-   **Variables binarias o quasi-binarias**
+    -   `Central_Air`, `Street`, `Utilities`, `Pool_QC`, `Alley`, `Fence`, `Paved_Drive` ⇒ recodificar en lógicos `0/1`.
+-   **Agrupaciones por dominio**
+    -   `MS_SubClass` → `OneStory` / `TwoStory` / `SplitLevel`.\
+    -   `House_Style` → `One_Story` / `Two_Story` / `Otros`.
 
 #### Ingeniería de variables y transformaciones
 
 | Variable (o grupo) | Problema detectado | Acción recomendada |
-|--------------------|--------------------|--------------------|
+|------------------------|------------------------|------------------------|
 | Lot_Frontage | ceros indican NA | reemplazar **0 → NA** + imputación KNN por `Neighborhood` |
 | Garage_Area / Garage_Cars | muchos ceros (sin garaje) | crear `has_garage = Garage_Cars > 0`; `log1p(Garage_Area)` solo si `has_garage` |
 | Total_Bsmt_SF | ausencia de sótano | `has_basement`, `log1p(Total_Bsmt_SF)` condicional |

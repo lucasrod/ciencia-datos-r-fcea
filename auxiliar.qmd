@@ -28,7 +28,6 @@ library(patchwork)  # Para combinar gráficos
 library(ggthemes)   # Temas para ggplot2
 library(e1071)      # Para asimetría y curtosis
 library(robustbase) # Para medcouple: estadístico no paramétrico y robusto que mide la asimetría del "cuerpo central" de la distribución, sin verse afectado por outliers
-library(naniar)     # Para visualización de valores faltantes
 
 # Reproducibilidad
 set.seed(42)
@@ -154,37 +153,8 @@ knitr::kable(
 ```
 
 > Nota: Observamos que variables como `Garage_Cars`, `Bsmt_Half_Bath` y `Bsmt_Full_Bath` son claramente numéricas discretas, pero fueron importadas como `numeric` (double) en vez de `integer`, a pesar de no tener decimales. Esta inconsistencia no afecta los cálculos pero sí debe considerarse al preparar modelos, ya que puede justificar transformar algunas de estas variables a `factor` u `ordered`.
-
-###### Conversión de variables discretas a factores
-
-Una heurística ampliamente utilizada en análisis exploratorio y preprocesamiento de datos sugiere que las variables numéricas discretas con una cardinalidad baja (comúnmente ≤ 10 o 15) deberían considerarse candidatas para ser tratadas como factores, en lugar de variables numéricas continuas. Esta recomendación se basa en que dichas variables suelen representar:
-
-* **Categorías codificadas numéricamente** (por ejemplo, cantidad de baños),
-* **Conteos pequeños o acotados** (número de cocinas, chimeneas, etc.),
-* **Escalas ordinales o temporales discretas** (mes, año de venta).
-
-En nuestro caso, las siguientes variables cumplen con esta condición (cardinalidad ≤ 15) y son clasificadas como numéricas discretas:
-
-| Variable         | Cardinalidad | Recomendación                            |
-| ---------------- | ------------ | ---------------------------------------- |
-| `Bsmt_Half_Bath` | 3            | ✅ Recontar o factorizar                  |
-| `Half_Bath`      | 3            | ✅ Recontar o factorizar                  |
-| `Bsmt_Full_Bath` | 4            | ✅ Recontar o factorizar                  |
-| `Kitchen_AbvGr`  | 4            | ✅ Codifica cantidad fija                 |
-| `Full_Bath`      | 5            | ✅ Categoría ordinal clara                |
-| `Fireplaces`     | 5            | ✅ Recuento categórico                    |
-| `Year_Sold`      | 5            | ✅ Variable temporal discreta             |
-| `Garage_Cars`    | 6            | ✅ Cantidad ordinal limitada              |
-| `BsmtFin_SF_1`   | 8            | ⚠️ Depende del modelo                    |
-| `Bedroom_AbvGr`  | 8            | ⚠️ Puede ser ordinal o continua discreta |
-| `Mo_Sold`        | 12           | ✅ Mes del año (ordinal)                  |
-| `TotRms_AbvGrd`  | 14           | ⚠️ Revisar distribución                  |
-
-En concreto se recomienda:
-
--   Para las variables con cardinalidad ≤ 6 (**especialmente `Bsmt_Half_Bath`, `Half_Bath`, `Kitchen_AbvGr`, `Garage_Cars` y `Fireplaces`**), se recomienda convertirlas a `factor()` o `ordered()` según su naturaleza, lo que puede mejorar la interpretabilidad de los modelos y reducir el riesgo de inferencias espurias al tratarlas como numéricas puras.
--   Para las variables de tiempo discreto, como `Year_Sold` y `Mo_Sold`, también deben considerarse factores ordenados si se planea modelar efectos estacionales o temporales.
--   En el caso de variables como `TotRms_AbvGrd` o `Bedroom_AbvGr`, inspeccionaremos su distribución: si la mayor parte del soporte está dominado por pocos valores comunes (ej. 5, 6, 7), y no se espera una relación estrictamente lineal con la variable de interés, puede justificarse también su recodificación.
+>
+> La lógica y criterios para convertir las variables numéricas discretas a factores (incluyendo la tabla de cardinalidades y las justificaciones) se han llevado a la sección **Recomendaciones de preprocesamiento** bajo el subtítulo **Conversión de variables discretas a factores**, donde encontraremos el listado completo y la acción sugerida para cada variable.
 
 #### Tipo de variable para el análisis
 
@@ -412,42 +382,7 @@ ames_data %>%
   knitr::kable(caption = "Variables categóricas con niveles que indican ausencia estructural")
 ```
 
-##### Tratamiento de codificaciones categóricas
-
-Para guiar decisiones de preprocesamiento, agrupamiento y codificación, se resumen a continuación algunas consideraciones sobre las variables categóricas del conjunto **Ames Housing**:
-
-###### Alta cardinalidad
-
--   `Neighborhood` (28 niveles) presenta una granularidad geográfica detallada. Se recomienda reagrupar niveles con \< 1 % de frecuencia en una categoría "Otros".
--   `Exterior_1st` y `Exterior_2nd` (16 niveles) pueden agruparse por material predominante (*Vinyl*, *Wood*, *Brick*, *Otros*) para facilitar interpretación y reducir dimensionalidad.
-
-###### Categorías infrecuentes
-
--   Niveles como `Landmark` (en `Neighborhood`) o `VWD` (en `Sale_Type`) representan \< 1 % de las observaciones. Es prudente reagrupar estos niveles raros bajo “Other” para evitar sobreajuste y ruido en modelos supervisados.
-
-###### Exploración de `Gar2` en `Misc_Feature`
-
-Dado que `Gar2` (5 observaciones, 0.2 %) indica un segundo garaje, filtrá esas filas y compará sus valores de `Garage_Area`, `Garage_Cars` y `Sale_Price`.
-
-```{r}
-ames_data %>%
-  filter(Misc_Feature == "Gar2") %>%
-  select(Garage_Area, Garage_Cars, Sale_Price) %>%
-  knitr::kable(caption = "Valores de Garage_Area, Garage_Cars y Sale_Price para Misc_Feature = 'Gar2'")
-```
-
-###### Variables binarias o casi binarias
-
--   Variables como `Central_Air` (93 % “Y”), `Street`, `Utilities`, `Pool_QC`, `Alley`, `Fence`, `Paved_Drive` tienen un nivel dominante \> 90 %, lo que justifica tratarlas como indicadores lógicos 0/1.
-
-###### Agrupaciones por conocimiento de dominio
-
--   `MS_SubClass`: puede reagruparse en categorías como *OneStory*, *TwoStory*, *SplitLevel* para capturar la función estructural.
--   `House_Style`: simplificable en *One_Story*, *Two_Story* y *Otros estilos* para mejorar generalización.
-
-###### Desequilibrio de niveles
-
--   Varias variables presentan niveles dominantes (\> 80 %), lo cual puede inducir sesgos. Este desbalance justifica métodos de regularización (Ridge, Lasso, ElasticNet) o selección de variables dummy con penalización.
+> Todos los lineamientos relativos a la consolidación de niveles en variables categóricas (alta cardinalidad, agrupación de niveles raros, binarización, etc.) se encuentran ahora en **Recomendaciones de preprocesamiento** dentro de la subsección **Reagrupación de niveles en categóricas**, con ejemplos y tablas que explicitan la estrategia de recodificación para cada caso.
 
 #### Variables numéricas: ceros estructurales
 
@@ -531,31 +466,9 @@ knitr::kable(
 )
 ```
 
-> Esta tabla valida la consistencia interna y guía la ingeniería de variables, sobretodo en variables como `Garage_Area`, `Total_Bsmt_SF` y `Mas_Vnr_Area`que estan altamente correlacionadas con `Sale_Price`
-
-##### Recomendaciones para el preprocesamiento
-
--   `Lot_Frontage`:
-    -   Conceptualmente, toda propiedad tiene algún tipo de frente, por lo que los ceros no representan un valor válido y deben tratarse como valores faltantes `NA`.
-    -   En los documentos originales del Ames Housing y en múltiples análisis reproducibles, se asume que los ceros fueron colocados en lugar de `NA` por errores de codificación o por datos no disponibles.
--   `Garage_Area` y `Garage_Cars`:
-    -   Usar `Garage_Cars` como factor ordenado o dejar como entero según el modelo.
-    -   Crear `has_garage = Garage_Cars > 0`
-    -   Usar interacción `Garage_Area * has_garage`
-    -   Usar transformación `log1p(Garage_Area)` sólo donde `Garage_Area > 0`
--   `Total_Bsmt_SF`:
-    -   Crear `has_basement = Total_Bsmt_SF > 0`
-    -   Transformar `log1p(Total_Bsmt_SF)` o modelar aparte para casos sin sótano.
-    -   Usar interacción `Total_Bsmt_SF * has_basement`
--   `Mas_Vnr_Area`:
-    -   Crear `has_veneer = Mas_Vnr_Type != "None"`
-    -   Usar `NA`si `Mas_Vnr_Type == "None"`
-    -   Usar transformación `log1p(Mas_Vnr_Area)` sólo donde `Mas_Vnr_Area > 0`
-    -   Usar interacción `Mas_Vnr_Area * has_veneer`
--   `Pool_Area`:
-    -   Crear `has_pool = Pool_QC != "None"`
-    -   Usar transformación `log1p(Pool_Area)` sólo donde `Pool_Area > 0`
-    -   Usar interacción `Pool_Area * has_pool`
+> Esta tabla valida la consistencia interna y guía la ingeniería de variables, sobretodo en variables como `Garage_Area`, `Total_Bsmt_SF` y `Mas_Vnr_Area`que estan altamente correlacionadas con `Sale_Price`.
+>
+> Las recomendaciones puntuales de ingeniería (creación de indicadores, transformaciones logarítmicas, interacciones y reemplazo de ceros por `NA`) se han unificado en **Recomendaciones de preprocesamiento** dentro de la sección **Ingeniería de variables y transformaciones**, acompañadas por una tabla final que resume problemas detectados y acciones recomendadas.
 
 #### Duplicados
 
@@ -674,6 +587,7 @@ p4 + p5
 # Seleccionar solo variables numéricas
 numeric_vars <- ames_data %>%
   select(where(is.numeric)) %>%
+  select(-any_of("log_Sale_Price")) %>% # Excluimos la variable respuesta transformada
   select(-matches("^[A-Za-z]+\\.y\\.+[0-9]+\\.?[0-9]*$"))  # Eliminar columnas duplicadas
 
 # Matriz de correlación
@@ -768,77 +682,9 @@ wrap_plots(cat_plots, ncol = 2) +
                   theme = theme(plot.title = element_text(hjust = 0.5, size = 14)))
 ```
 
-## Análisis de valores faltantes
+## Análisis de valores faltantes y atípicos
 
-```{r cat_missing_values}
-# Función para calcular porcentaje de valores faltantes por columna
-missing_summary <- function(data) {
-  data %>%
-    summarise(across(everything(), ~sum(is.na(.)))) %>%
-    pivot_longer(everything(), names_to = "variable", values_to = "n_missing") %>%
-    mutate(pct_missing = n_missing / nrow(data) * 100) %>%
-    filter(n_missing > 0) %>%
-    arrange(desc(pct_missing))
-}
-
-# Calcular y mostrar resumen de valores faltantes
-missing_data <- missing_summary(ames_data)
-
-# Mostrar variables con valores faltantes
-if(nrow(missing_data) > 0) {
-  knitr::kable(missing_data, 
-               digits = 2,
-               caption = "Variables con valores faltantes")
-} else {
-  cat("No hay valores faltantes en el conjunto.")
-}
-
-# Visualizar el patrón de valores faltantes
-if(nrow(missing_data) > 0) {
-  library(naniar)
-  vis_miss(ames_data, sort_miss = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8)) +
-    labs(title = "Patrón de valores faltantes en el conjunto")
-}
-```
-
-## Análisis de valores atípicos
-
-```{r outliers_analysis}
-# Función para identificar valores atípicos usando el método IQR
-get_outliers <- function(x) {
-  qnt <- quantile(x, probs = c(0.25, 0.75), na.rm = TRUE)
-  iqr <- IQR(x, na.rm = TRUE)
-  lower <- qnt[1] - 1.5 * iqr
-  upper <- qnt[2] + 1.5 * iqr
-  list(lower = lower, upper = upper, outliers = x[x < lower | x > upper])
-}
-
-# Identificar valores atípicos en Sale_Price
-outliers_sale_price <- get_outliers(ames_data$Sale_Price)
-
-# Mostrar resumen de valores atípicos
-cat("Límite inferior para valores atípicos:", scales::dollar(outliers_sale_price$lower), "\n")
-cat("Límite superior para valores atípicos:", scales::dollar(outliers_sale_price$upper), "\n")
-cat("Número de valores atípicos:", length(outliers_sale_price$outliers), "\n")
-cat("Porcentaje de valores atípicos:", 
-    round(length(outliers_sale_price$outliers) / nrow(ames_data) * 100, 2), "%\n")
-
-# Visualizar valores atípicos
-ames_data %>%
-  mutate(is_outlier = if_else(Sale_Price > outliers_sale_price$upper | 
-                              Sale_Price < outliers_sale_price$lower, 
-                            "Atípico", "Normal")) %>%
-  ggplot(aes(x = "", y = Sale_Price, fill = is_outlier)) +
-  geom_boxplot() +
-  scale_fill_manual(values = c("Atípico" = "red", "Normal" = "steelblue")) +
-  scale_y_continuous(labels = scales::dollar) +
-  labs(title = "Identificación de valores atípicos en Sale_Price",
-       x = "",
-       y = "Precio de Venta (USD)",
-       fill = "Clasificación") +
-  theme(legend.position = "bottom")
-```
+Este análisis se encuentra integrado dentro de la sección **"Paneo Inicial y Diagnóstico de Calidad"**, donde se abordaron tanto los `NA` explícitos como las ausencias estructurales codificadas (e.g. `"None"`, `0`).
 
 ## Conclusiones y recomendaciones para el modelado
 
@@ -862,27 +708,80 @@ ames_data %>%
     -   Se identificaron XX valores atípicos en `Sale_Price` (aproximadamente YY% de los datos)
     -   Estos valores podrían ser casas de lujo o errores de medición
 
-### Recomendaciones para el modelado
+### Recomendaciones de preprocesamiento
+> Todas las acciones indicadas aquí deben implementarse en la _recipe_ preliminar o en pasos de ingeniería previos al ajuste de modelos en `HW2.qmd`.
 
--   **Preprocesamiento**:
-    -   Aplicar transformación logarítmica a `Sale_Price` para manejar la asimetría
-    -   Considerar la eliminación o imputación de variables con alta proporción de valores faltantes
-    -   Estandarizar o normalizar las variables numéricas
-    -   Codificar las variables categóricas (one-hot encoding o target encoding)
--   **Selección de características**:
-    -   Incluir las variables más correlacionadas identificadas en el análisis
-    -   Considerar la creación de características derivadas (ej: área total = área del primer piso + área del segundo piso)
-    -   Evaluar la multicolinealidad entre predictores
--   **Validación del modelo**:
-    -   Utilizar validación cruzada para una mejor estimación del rendimiento
-    -   Considerar métricas robustas como el error absoluto mediano (MAE) además del RMSE
-    -   Evaluar el rendimiento en diferentes rangos de precios
--   **Manejo de valores atípicos**:
-    -   Evaluar el impacto de incluir/excluir valores atípicos
-    -   Considerar modelos robustos a valores atípicos
--   **Consideraciones adicionales**:
-    -   Evaluar interacciones entre variables (ej: efecto del barrio en la relación entre área y precio)
-    -   Considerar efectos no lineales en las relaciones
-    -   Evaluar la importancia de las variables en el modelo final
+#### Conversión de variables discretas a factores
 
-Este análisis proporciona una base sólida para el desarrollo de un modelo de regresión para predecir el precio de venta de viviendas. Se recomienda utilizar estos hallazgos para guiar las decisiones de preprocesamiento y selección de características en el modelo final.
+| Variable            | Cardinalidad | Acción recomendada | Comentario |
+|---------------------|-------------:|--------------------|------------|
+| Bsmt_Half_Bath      | 3            | `factor(ordered = TRUE)` | ordinal (0–2) |
+| Half_Bath           | 3            | `factor(ordered = TRUE)` | ordinal (0–2) |
+| Bsmt_Full_Bath      | 4            | `factor(ordered = TRUE)` | ordinal (0–3) |
+| Kitchen_AbvGr       | 4            | `factor()`          | recuento discreto |
+| Full_Bath           | 5            | `factor(ordered = TRUE)` | |
+| Fireplaces          | 5            | `factor()`          | muchos ceros |
+| Year_Sold           | 5            | `factor(ordered = TRUE)` | efecto temporal |
+| Garage_Cars         | 6            | `factor(ordered = TRUE)` | 0–5 autos |
+| BsmtFin_SF_1        | 8            | _depende del modelo_ | revisar linealidad |
+| Bedroom_AbvGr       | 8            | _factor_ **o** numérica | distribución sesgada |
+| Mo_Sold             | 12           | `factor(ordered = TRUE)` | estacionalidad |
+| TotRms_AbvGrd       | 14           | _factor_ **si** no lineal | revisión visual |
+
+#### Reagrupación de niveles en categóricas
+
+- **Alta cardinalidad**  
+  - `Neighborhood` (28 niveles) → reagrupar niveles \< 1 % en “Otros”.  
+  - `Exterior_1st`/`Exterior_2nd` (16 niveles) → agrupar por material: `Vinyl`, `Wood`, `Brick`, `Otros`.
+
+- **Categorías infrecuentes**  
+  - Ej.: `Landmark` (`Neighborhood`), `VWD` (`Sale_Type`) ⇒ “Other”.
+
+- **Variables binarias o quasi-binarias**  
+  - `Central_Air`, `Street`, `Utilities`, `Pool_QC`, `Alley`, `Fence`, `Paved_Drive` ⇒ recodificar en lógicos `0/1`.
+
+- **Agrupaciones por dominio**  
+  - `MS_SubClass` → `OneStory` / `TwoStory` / `SplitLevel`.  
+  - `House_Style` → `One_Story` / `Two_Story` / `Otros`.
+
+#### Ingeniería de variables y transformaciones
+
+| Variable (o grupo) | Problema detectado | Acción recomendada |
+|--------------------|--------------------|--------------------|
+| Lot_Frontage | ceros indican NA | reemplazar **0 → NA** + imputación KNN por `Neighborhood` |
+| Garage_Area / Garage_Cars | muchos ceros (sin garaje) | crear `has_garage = Garage_Cars > 0`; `log1p(Garage_Area)` solo si `has_garage` |
+| Total_Bsmt_SF | ausencia de sótano | `has_basement`, `log1p(Total_Bsmt_SF)` condicional |
+| Mas_Vnr_Area | ceros estructurales | `has_veneer`, `log1p(Mas_Vnr_Area)` condicional; imputar `NA` donde `Mas_Vnr_Type == "None"` |
+| Pool_Area | 99 % ceros | `has_pool`, `log1p(Pool_Area)` condicional |
+| Sale_Price | asimetría + heteroscedasticidad | `step_log(all_outcomes())` |
+
+Además se sugiere crear `Total_SF = First_Flr_SF + Second_Flr_SF + Total_Bsmt_SF` y `Age = Year_Sold – Year_Built`; ambas mostraron mayor señal que sus componentes aislados.
+
+#### Tabla resumen final
+
+```{r tbl_preproc_summary, echo=FALSE, message=FALSE}
+library(tibble)
+library(dplyr)
+
+preproc_tbl <- tribble(
+  ~Variable,        ~Problema,                              ~Accion,
+  "Lot_Frontage",   "Ceros como NA",                        "Imputar por barrio + step_knnimpute()",
+  "Garage_Area",    "Muchos ceros",                         "log1p + interacción con has_garage",
+  "Garage_Cars",    "Ordinal discreta",                     "factor(ordered = TRUE)",
+  "Total_Bsmt_SF",  "Ausencia estructural",                 "has_basement + log1p condicional",
+  "Mas_Vnr_Area",   "Ceros estructurales",                  "has_veneer + log1p condicional",
+  "Pool_Area",      "Alta sparsidad",                       "has_pool + log1p condicional",
+  "Neighborhood",   "Alta cardinalidad",                    "Reagrupar niveles raros (<1 %)",
+  "Exterior_1st/2nd","Alta cardinalidad",                   "Agrupar por material",
+  "Binarias (varias)", "Un nivel ≥90 %",                   "Recodificar a lógico 0/1",
+  "Sale_Price",     "Asimetría derecha",                    "step_log(all_outcomes())",
+  "Total_SF",       "No existe",                            "Crear feature derivada",
+  "Age",            "No existe",                            "Crear feature derivada"
+)
+
+knitr::kable(preproc_tbl, caption = "Síntesis de problemas y acciones de preprocesamiento")
+```
+
+```{r}
+sessionInfo()
+```

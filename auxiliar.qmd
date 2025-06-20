@@ -315,7 +315,7 @@ numeric_eda <- skim_summary %>%
 
 > **Nota sobre las medidas de asimetría:** En este análisis se reportan dos métricas complementarias para evaluar la asimetría de las variables numéricas:
 >
-> -   `skewness` corresponde al **coeficiente muestral de asimetría (**$g_1$), una medida **paramétrica** que mide la forma de la distribución en función del sesgo respecto a la media (mediante el tercer momento central muestral). Es sensible a valores atípicos (*outliers*) y capta la **asimetría en las colas**.
+> -   `skewness` corresponde al coeficiente de asimetría muestral ($g_1$), una medida **paramétrica** que mide la forma de la distribución en función del sesgo respecto a la media (mediante el tercer momento central muestral). Es sensible a valores atípicos (*outliers*) y capta la **asimetría en las colas**.
 > -   `medcouple`: es un **estadístico no paramétrico y robusto** que mide la asimetría del “cuerpo central" de la distribución, sin verse afectado por outliers.
 >
 > Dado que ambas métricas responden a diferentes aspectos de la forma de la distribución, pueden arrojar resultados aparentemente contradictorios:
@@ -715,7 +715,7 @@ Este análisis se encuentra integrado dentro de la sección **"Paneo Inicial y D
 #### Conversión de variables discretas a factores
 
 | Variable       | Cardinalidad | Acción recomendada        | Comentario           |
-|--------------------|----------------:|-------------------|-----------------|
+|----------------|--------------|---------------------------|----------------------|
 | Bsmt_Half_Bath |            3 | `factor(ordered = TRUE)`  | ordinal (0–2)        |
 | Half_Bath      |            3 | `factor(ordered = TRUE)`  | ordinal (0–2)        |
 | Bsmt_Full_Bath |            4 | `factor(ordered = TRUE)`  | ordinal (0–3)        |

@@ -9,6 +9,7 @@ format:
     code-fold: false
     code-tools: true
     code-summary: "Mostrar código"
+bibliography: references.bib
 execute:
   echo:    true
   warning: true
@@ -79,6 +80,55 @@ A continuación se sintetizan los principales hallazgos:
     -   Considerar ingeniería de características que reflejen combinaciones relevantes (ej. superficie total habitable).
 
 Este informe sirve como insumo previo para diseñar estrategias de preprocesamiento y selección de variables en el modelado predictivo.
+
+
+## Introducción
+
+En este proyecto trabajaremos con el conjunto de datos conocido como *Ames Housing*, inicialmente presentado por Dean De Cock [@ames_decock_2011] en el artículo académico *"Ames, Iowa: Alternative to the Boston Housing Data"*. Este conjunto registra ventas de propiedades residenciales en la ciudad de Ames, Iowa, Estados Unidos, ocurridas entre los años 2006 y 2010. El conjunto final del estudio original contiene 2930 registros con aproximadamente 80 variables que describen características físicas continuas (superficie total del terreno, metros cuadrados habitables, área del sótano), discretas (número de baños, cocinas, plazas de garage), ordinales (calidad general, condición general) y nominales (barrio, estilo de casa, estado de venta, entre otras)
+
+El mercado inmobiliario en Ames se caracteriza por una marcada heterogeneidad en términos de precios y perfiles de vivienda. Se observan propiedades con calidades constructivas, tamaños y ubicaciones muy diversas, lo que introduce una alta variabilidad tanto en variables continuas como categóricas. Por ejemplo, el **precio de venta (variable explicada, de respuesta o dependiente)**, varía entre \$12 789 y más de \$700 000 a través de más de 25 barrios distintos, cada uno con dinámicas propias. Esta variabilidad ofrece una valiosa oportunidad para explorar cómo las características estructurales y la ubicación influyen directamente sobre el valor de los inmuebles. En el análisis original se demostró que, de hecho, cerca del 80 % de la variación en el precio de venta podía ser explicada únicamente considerando la superficie total construida y el barrio en el cual se ubica la propiedad.
+
+Desde una perspectiva estadística, el conjunto presenta una estructura de datos moderadamente compleja. Combina variables numéricas continuas y discretas, ordinales y categóricas, muchas de ellas con ceros y codificaciones como "None", lo que hace necesario revisar con atención cómo están representados y organizados los datos. También se observan correlaciones fuertes entre las **variables independientes o predictoras** (como el área habitable y el número de habitaciones), así como indicios de heterocedasticidad respecto al precio (varianza del error depende de las variables independientes).
+
+```{=html}
+<!--
+
+Desde una perspectiva económica y social, el análisis de este tipo de datos es relevante para comprender cómo se forman los precios en mercados inmobiliarios locales, especialmente en ciudades intermedias como Ames (58 965 habitantes según el Censo de 2010). En este sentido, el precio de venta puede interpretarse como una expresión observable de las preferencias agregadas de los consumidores, quienes asignan distinto valor, o utilidad, a atributos como el tamaño del terreno, la calidad de los materiales o la ubicación.
+
+Analizar dicha variabilidad permite no solo entender mejor cómo varían los precios de las viviendas según sus características, sino también brindar información útil para quienes toman decisiones sobre compra o venta de propiedades. Además, puede servir de apoyo para el diseño de políticas públicas relacionadas con el acceso a la vivienda y la planificación urbana.
+
+Por estas razones, el conjunto Ames Housing es un conjunto de datos ideal para aplicar técnicas de estadística descriptiva, explorando relaciones entre variables, resumiendo información relevante y visualizando estructuras complejas. En particular, abordaremos el análisis mediante gráficos y medidas de resumen, y entrenaremos un modelo de regresión lineal múltiple para predecir el precio de venta, así como métodos de agrupamiento (*clustering*) para identificar posibles grupos dentro del mercado inmobiliario que no están explícitamente definidos en los datos, pero que pueden descubrirse al analizar similitudes entre las viviendas.
+
+-->
+```
+
+Por estas razones, el conjunto *Ames Housing* resulta adecuado para aplicar herramientas de estadística descriptiva y técnicas exploratorias que permitan comprender mejor el mercado inmobiliario. En este proyecto nos proponemos resumir y visualizar la información mediante gráficos y medidas de resumen, ajustar un modelo de regresión lineal múltiple para predecir el precio de venta y aplicar métodos de agrupamiento (*clustering*) para identificar perfiles de viviendas con características similares.
+
+## Descripción del conjunto de datos
+
+En nuestro análisis utilizaremos la versión del conjunto provista en el paquete de R `{modeldata}`, denominado simplemente `ames` [@modeldata2024]. Este conjunto presenta diferencias puntuales respecto al original propuesto por De Cock (2011) y documentado detalladamente en su diccionario de variables [@ames_datadict_2011].
+
+En particular, **no están presentes** en nuestro conjunto las siguientes 10 variables:
+
+-   `Order` (número de observación)
+-   `PID` (identificador de parcela)
+-   `Overall Qual` (calidad general de la casa)
+-   `Exter Qual` (calidad del material exterior)
+-   `Bsmt Qual` (calidad/altura del sótano)
+-   `Low Qual Fin SF` (superficie de acabado de baja calidad)
+-   `KitchenQual` (calidad de la cocina)
+-   `FireplaceQu` (calidad de la chimenea)
+-   `Garage Yr Blt` (año de construcción del garaje)
+-   `GarageQual` (calidad del garaje)
+
+Por otro lado, aparecen dos nuevas variables en nuestro conjunto:
+
+-   `Longitude` (longitud geográfica)
+-   `Latitude` (latitud geográfica)
+
+Por tanto, mientras el conjunto original incluye 82 variables, nuestro análisis se basará en un total de 74.
+
+> Cabe señalar que las variables omitidas corresponden a medidas cualitativas que fueron excluidas deliberadamente en la versión de `{modeldata}` por considerarse demasiado cercanas al resultado que se busca predecir (el precio de venta), o posibles proxies del mismo, lo que introduce sesgos al usarse como predictores. Esta decisión busca preservar la validez del modelado al evitar variables que podrían comportarse como outcomes encubiertos [@modeldata2024].
 
 ## Paneo Inicial y Diagnóstico de Calidad
 
@@ -386,9 +436,13 @@ ames_data %>%
 
 #### Variables numéricas: ceros estructurales
 
-Variables numéricas como `Garage_Area` o `MasVnr_Area` pueden contener ceros que no representan valores cuantitativos reales, sino ausencia de la característica (p.ej., `Mas_Vnr_Area = 0` cuando `Mas_Vnr_Type == "None"`). Este detalle también se resalta en notebooks de Kaggle, donde se señala que “el valor 0 puede estar indicando que el criterio no aplicaba”. Prestar especial atención al imputar o escalar estos ceros.
+En el Ames Housing Dataset, algunos ceros en variables numéricas no representan valores cuantitativos reales, sino que indican la **ausencia estructural** de una característica. Por ejemplo, un valor `0` en `Garage_Area` implica que no hay garaje, y en `MasVnr_Area`, que no hay revestimiento de mampostería. Esta interpretación está respaldada por variables categóricas asociadas como `Garage_Type == "None"` o `MasVnr_Type == "None"`.
 
-Listamos la frecuencia de ceros estructurales en variables numéricas
+> Como se señala en varios notebooks de Kaggle, "el valor 0 puede estar indicando que el criterio no aplicaba".
+
+Es importante tener en cuenta esta semántica al transformar, imputar o escalar estas variables, ya que estos ceros no deben tratarse como valores numéricos ordinarios.
+
+A continuación se muestra la proporción de ceros estructurales en variables numéricas:
 
 ```{r}
 # Porcentaje de observaciones `0` en variables numéricas
@@ -405,7 +459,7 @@ ames_data %>%
 
 ##### Mapeo de variables y métricas asociadas
 
-Exploramos la relación entre variables categóricas y numéricas que pueden tener un comportamiento estructural similar. Se mapean pares de variables categóricas (`cat_var`) y numéricas (`num_var`) relacionadas, donde el valor cero en la variable numérica puede indicar la ausencia de la característica descrita por la variable categórica.
+A continuación se exploran pares de variables categóricas (`cat_var`) y numéricas (`num_var`) que presentan un comportamiento estructural conjunto. En estos casos, el valor `"None"` en la variable categórica suele coincidir con un valor `0` en la numérica, lo que refuerza la interpretación del cero como indicador de ausencia de la característica.
 
 ```{r}
 pares <- list(
@@ -466,9 +520,9 @@ knitr::kable(
 )
 ```
 
-> Esta tabla valida la consistencia interna y guía la ingeniería de variables, sobretodo en variables como `Garage_Area`, `Total_Bsmt_SF` y `Mas_Vnr_Area`que estan altamente correlacionadas con `Sale_Price`.
+> Esta tabla permite verificar la consistencia interna del dataset y orientar decisiones de ingeniería de variables, especialmente para `Garage_Area`, `Total_Bsmt_SF` y `Mas_Vnr_Area`, que presentan asociaciones estructurales claras con variables categóricas y alta correlación con `Sale_Price`.
 >
-> Las recomendaciones puntuales de ingeniería (creación de indicadores, transformaciones logarítmicas, interacciones y reemplazo de ceros por `NA`) se han unificado en **Recomendaciones de preprocesamiento** dentro de la sección **Ingeniería de variables y transformaciones**, acompañadas por una tabla final que resume problemas detectados y acciones recomendadas.
+> Las recomendaciones específicas (creación de indicadores binarios, transformaciones logarítmicas, generación de interacciones, y recodificación de ceros como `NA`) se consolidan en la sección **Ingeniería de variables y transformaciones**, junto con una tabla resumen de problemas detectados y acciones propuestas.
 
 #### Duplicados
 
@@ -575,6 +629,116 @@ p5 <- ggplot(ames_data, aes(sample = log_Sale_Price)) +
 
 # Mostrar gráficos transformados
 p4 + p5
+```
+
+#### Tabla comparativa de resumen descriptivo: Sale_Price vs log_Sale_Price
+
+Habría que:
+- Elegir una de las dos tablas
+- Incluir tests de normalidad para ambas variables o por lo menos que quede tabulado los p-valor para diferentes pruebas de hipótesis
+- Arreglar warnings
+- Pivotar las tablas para que las variables queden en las columnas y las métricas en las filas
+
+```{r summary_log_sale_price}
+
+# Variables a resumir
+vars <- c("Sale_Price", "log_Sale_Price")
+
+# Recalculamos el resumen skim incluyendo log(Sale_Price)
+skim_summary <- skim(ames_data)
+
+# Extraer resumen estándar de skimr
+std <- skim_summary %>%
+  filter(skim_variable %in% vars) %>%
+  transmute(
+    variable   = skim_variable,
+    mean       = numeric.mean,
+    sd         = numeric.sd,
+    rel_skew   = abs(numeric.mean - numeric.p50) / numeric.sd,
+    asimetría  = case_when(
+                   rel_skew < 0.1              ~ "Aprox. simétrica",
+                   numeric.mean > numeric.p50  ~ "Positiva",
+                   TRUE                        ~ "Negativa"
+                 ),
+    p0         = numeric.p0,
+    p25        = numeric.p25,
+    median     = numeric.p50,
+    p75        = numeric.p75,
+    p100       = numeric.p100
+  )
+
+# Calcular resumen extendido
+ext <- skim_summary %>%
+  filter(skim_variable %in% vars) %>%
+  rowwise() %>%
+  mutate(
+    x           = list(ames_data[[skim_variable]]),
+    cv          = numeric.sd / numeric.mean,
+    iqr         = numeric.p75 - numeric.p25,
+    skewness    = skewness(x, na.rm = TRUE),
+    medcouple   = mc(x, doScale = TRUE),
+    kurtosis    = kurtosis(x, na.rm = TRUE),
+    outliers    = mean(x < (numeric.p25 - 1.5*iqr) |
+                       x > (numeric.p75 + 1.5*iqr), na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  transmute(
+    variable      = skim_variable,
+    cv            = round(cv, 2),
+    IQR           = round(iqr, 2),
+    skewness      = round(skewness, 2),
+    medcouple     = round(medcouple, 2),
+    kurtosis      = round(kurtosis, 2),
+    pct_outliers  = scales::percent(outliers, accuracy = 0.1)
+  )
+
+# Unir y mostrar
+std %>%
+  left_join(ext, by = "variable") %>%
+  knitr::kable(
+    digits  = 2,
+    caption = "Comparación de estadísticas descriptivas para Sale_Price y log_Sale_Price"
+  )
+```
+
+```{r}
+ames_data %>%
+  # Seleccionar y pivotar
+  select(Sale_Price, log_Sale_Price) %>%
+  pivot_longer(everything(),
+               names_to  = "variable",
+               values_to = "valor") %>%
+  # Agrupar y resumir todo de una
+  group_by(variable) %>%
+  summarise(
+    # tendencia central y posición
+    media    = mean(valor, na.rm = TRUE),
+    mediana  = median(valor, na.rm = TRUE),
+    p25      = quantile(valor, 0.25, na.rm = TRUE),
+    p75      = quantile(valor, 0.75, na.rm = TRUE),
+    # dispersión
+    sd       = sd(valor, na.rm = TRUE),
+    IQR      = IQR(valor, na.rm = TRUE),
+    cv       = sd / media,
+    # asimetría y curtosis
+    skewness = e1071::skewness(valor, na.rm = TRUE),
+    medcouple= robustbase::mc(valor, doScale = TRUE),
+    kurtosis = e1071::kurtosis(valor, na.rm = TRUE),
+    # outliers según Tukey
+    pct_outliers = mean(
+      valor < (p25 - 1.5 * IQR) | valor > (p75 + 1.5 * IQR),
+      na.rm = TRUE
+    )
+  ) %>%
+  # Formatear porcentajes y decimales
+  mutate(
+    pct_outliers = scales::percent(pct_outliers, accuracy = 0.1),
+    across(c(media:cv, skewness:medcouple, kurtosis), round, 2)
+  ) %>%
+  knitr::kable(
+    caption = "Estadísticas descriptivas completas (tendencia, dispersión, asimetría, outliers)",
+    digits  = 2
+  )
 ```
 
 ## Análisis de variables predictoras
@@ -692,14 +856,14 @@ Este análisis se encuentra integrado dentro de la sección **"Paneo Inicial y D
 
 -   **Variable respuesta (Sale_Price)**:
     -   Distribución asimétrica a la derecha, con una cola larga hacia valores altos
-    -   Coeficiente de variación del XX% indica una variabilidad moderada en los precios
+    -   Coeficiente de variación del 44% indica una variabilidad moderada en los precios
     -   La transformación logarítmica mejora significativamente la normalidad de la distribución
 -   **Variables numéricas más relevantes**:
-    -   `Overall_Qual`, `Gr_Liv_Area`, `Garage_Cars`, `Garage_Area` y `Total_Bsmt_SF` muestran las correlaciones más fuertes con `Sale_Price`
+    -   `Overall_Cond`, `Gr_Liv_Area`, `Garage_Cars`, `Garage_Area` y `Total_Bsmt_SF` muestran las correlaciones más fuertes con `Sale_Price`
     -   Se observan relaciones aproximadamente lineales con la variable respuesta
 -   **Variables categóricas importantes**:
     -   `Neighborhood` muestra una gran variabilidad en los precios entre barrios
-    -   `Overall_Qual` y `Kitchen_Qual` tienen una fuerte relación con el precio de venta
+    -   `Overall_Cond` y tienen una fuerte relación con el precio de venta
     -   La calidad de los materiales y el acabado (`Exter_Qual`, `Bsmt_Qual`) también son predictores importantes
 -   **Valores faltantes**:
     -   Varias variables tienen valores faltantes que deberán ser manejados
@@ -715,19 +879,19 @@ Este análisis se encuentra integrado dentro de la sección **"Paneo Inicial y D
 #### Conversión de variables discretas a factores
 
 | Variable       | Cardinalidad | Acción recomendada        | Comentario           |
-|----------------|--------------|---------------------------|----------------------|
-| Bsmt_Half_Bath |            3 | `factor(ordered = TRUE)`  | ordinal (0–2)        |
-| Half_Bath      |            3 | `factor(ordered = TRUE)`  | ordinal (0–2)        |
-| Bsmt_Full_Bath |            4 | `factor(ordered = TRUE)`  | ordinal (0–3)        |
-| Kitchen_AbvGr  |            4 | `factor()`                | recuento discreto    |
-| Full_Bath      |            5 | `factor(ordered = TRUE)`  |                      |
-| Fireplaces     |            5 | `factor()`                | muchos ceros         |
-| Year_Sold      |            5 | `factor(ordered = TRUE)`  | efecto temporal      |
-| Garage_Cars    |            6 | `factor(ordered = TRUE)`  | 0–5 autos            |
-| BsmtFin_SF_1   |            8 | *depende del modelo*      | revisar linealidad   |
-| Bedroom_AbvGr  |            8 | *factor* **o** numérica   | distribución sesgada |
-| Mo_Sold        |           12 | `factor(ordered = TRUE)`  | estacionalidad       |
-| TotRms_AbvGrd  |           14 | *factor* **si** no lineal | revisión visual      |
+|------------------|------------------|-------------------|------------------|
+| Bsmt_Half_Bath | 3            | `factor(ordered = TRUE)`  | ordinal (0–2)        |
+| Half_Bath      | 3            | `factor(ordered = TRUE)`  | ordinal (0–2)        |
+| Bsmt_Full_Bath | 4            | `factor(ordered = TRUE)`  | ordinal (0–3)        |
+| Kitchen_AbvGr  | 4            | `factor()`                | recuento discreto    |
+| Full_Bath      | 5            | `factor(ordered = TRUE)`  |                      |
+| Fireplaces     | 5            | `factor()`                | muchos ceros         |
+| Year_Sold      | 5            | `factor(ordered = TRUE)`  | efecto temporal      |
+| Garage_Cars    | 6            | `factor(ordered = TRUE)`  | 0–5 autos            |
+| BsmtFin_SF_1   | 8            | *depende del modelo*      | revisar linealidad   |
+| Bedroom_AbvGr  | 8            | *factor* **o** numérica   | distribución sesgada |
+| Mo_Sold        | 12           | `factor(ordered = TRUE)`  | estacionalidad       |
+| TotRms_AbvGrd  | 14           | *factor* **si** no lineal | revisión visual      |
 
 #### Reagrupación de niveles en categóricas
 
@@ -757,7 +921,7 @@ Además se sugiere crear `Total_SF = First_Flr_SF + Second_Flr_SF + Total_Bsmt_S
 
 #### Tabla resumen final
 
-```{r tbl_preproc_summary, echo=FALSE, message=FALSE}
+```{r tbl_preproc_summary}
 library(tibble)
 library(dplyr)
 

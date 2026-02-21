@@ -1,0 +1,18 @@
+# Archivos de R y RStudio
+.Rhistory
+.RData
+.Rproj.user/
+
+# Salidas Quarto & Pandoc
+.quarto/
+*_files/
+*.html
+*.pdf
+
+# Archivos del sistema
+.DS_Store
+.windsurf/
+
+# Directorios temporales y otros proyectos
+.other/
+118/

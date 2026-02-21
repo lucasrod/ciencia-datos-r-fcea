@@ -1,0 +1,216 @@
+name: Autograding Tests
+
+on:
+  workflow_dispatch:  
+
+permissions:  
+  contents: write
+  pull-requests: write
+
+jobs:   
+  run-autograding-tests:     
+    runs-on: ubuntu-latest
+
+    steps:       
+      - name: Checkout código
+        uses: actions/checkout@v4  
+
+      - name: Obtener fecha del último commit y verificar deadline
+        id: check_deadline
+        run: |
+          last_commit_date=$(git log -1 --format=%cI)
+          deadline_date='${{ secrets.DEADLINE_DATE }}'
+              
+          echo "📌 Última fecha de commit: $last_commit_date"
+          echo "📌 Fecha límite configurada: $deadline_date"
+
+          if [[ "$last_commit_date" > "$deadline_date" ]]; then
+            echo "⏳ La fecha del último commit ($last_commit_date) es posterior a la fecha límite ($deadline_date)."
+            echo "LATE_SUBMISSION=true" >> $GITHUB_ENV
+          else
+            echo "✅ El último commit está dentro del plazo permitido."
+            echo "LATE_SUBMISSION=false" >> $GITHUB_ENV
+          fi
+
+      - name: Verificar e instalar AWS CLI
+        run: |           
+          if ! command -v aws &> /dev/null; then             
+            sudo apt-get update             
+            sudo apt-get install -y awscli           
+          fi           
+          aws --version        
+
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:           
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Descargar archivos desde S3
+        run: |
+          aws s3 cp s3://cdr25/${{ secrets.HW_CODE }}/tests.json config/tests.json
+          aws s3 cp s3://cdr25/${{ secrets.HW_CODE }}/autograde.R config/autograde.R
+
+      - name: Configurar R
+        uses: r-lib/actions/setup-r@v2              
+
+      - name: Configurar Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:           
+          tinytex: true        
+
+      - name: Instalar renv
+        run: Rscript -e 'if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")'
+        
+      - name: Instalar dependencias de R (Base)
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::data.table
+            any::quarto
+            any::ggplot2
+            any::dplyr
+            any::jsonlite
+            any::testthat
+            any::curl
+            any::httr
+            any::tidyverse
+            any::tidymodels
+
+      - name: Instalar dependencias de R (extra)
+        run: Rscript -e 'pkgs <- unique(renv::dependencies()$Package); print(pkgs) ;install.packages(pkgs, repos = "https://cloud.r-project.org")'
+
+      - name: Checkout feedback branch
+        run: git checkout -b feedback_hw || git checkout feedback_hw
+
+      - name: Ejecutar script de evaluación
+        run: Rscript config/autograde.R "${{ secrets.HW_CODE }}"
+
+      - name: Instalar jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Parsear summary.json para comentario en PR
+        id: parse_summary
+        run: |
+          nota_total=$(jq '.nota_total' summary.json)
+          nota_maxima=$(jq '.nota_maxima' summary.json)
+          resultados=$(jq -r '.resultados | to_entries | map("- ✅ **\(.key):** \(.value.estado) (**\(.value.puntos)** puntos)\n  - 📌 **Detalles:** \(.value.mensaje)\n") | .[]' summary.json)
+
+          if [[ "$nota_total" == "null" ]]; then
+            nota="Pendiente"
+          else
+            nota="**${nota_total}/${nota_maxima}**"
+          fi
+
+          summary_comment=$(cat <<EOF
+          ## 📊 Resultados de la Corrección Automática
+
+          - 📌 **Nota Total:** $nota
+          - 📚 **Resumen por ejercicio:**
+
+          $resultados
+          EOF
+          )
+
+          echo "$summary_comment" > summary_comment.txt
+          echo "summary_comment_file=summary_comment.txt" >> "$GITHUB_OUTPUT"
+
+      - name: Commit y push de feedback
+        run: |
+          git config --global user.name "Teacher CDR"
+          git config --global user.email "github-actions@github.com"
+          git add corrected_${{ secrets.HW_CODE }}.qmd corrected_${{ secrets.HW_CODE }}.html summary.json
+          git commit -m "📋 Corrección automática + revisión manual pendiente"
+          git push origin feedback_hw --force
+          
+      - name: Obtener fecha actual y nombre del estudiante
+        id: get_info
+        run: |
+          echo "current_date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+          student_name=$(echo "${{ github.repository }}" | sed 's/^.*test-hw1-//')
+          echo "student_name=$student_name" >> $GITHUB_ENV
+
+      - name: Buscar PR existente
+        id: find_pr
+        run: |
+          pr_list=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls?state=open")
+
+          pr_number=$(echo "$pr_list" | jq -r '.[] | select(.head.ref=="feedback_hw") | .number')
+
+          if [[ -n "$pr_number" && "$pr_number" != "null" ]]; then
+            echo "PR encontrado: #$pr_number"
+            echo "pr_number=$pr_number" >> $GITHUB_ENV
+          else
+            echo "No se encontró PR previo."
+            echo "pr_number=" >> $GITHUB_ENV
+          fi
+
+      - name: Actualizar PR existente o crear nuevo
+        run: |
+          pr_suffix=""
+          if [[ "$LATE_SUBMISSION" == "true" ]]; then
+            pr_suffix=" (ENTREGA TARDÍA 🚨)"
+          fi
+
+          pr_title="Corrección automática - Feedback HW2 ($current_date, $student_name)$pr_suffix"
+
+          if [[ -n "$pr_number" ]]; then
+            echo "Actualizando título del PR existente: #$pr_number"
+            curl -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -d "{\"title\": \"$pr_title\"}" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number"
+          else
+            echo "Creando nuevo PR..."
+            pr_response=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -d "$(jq -n --arg title "$pr_title" --arg head "feedback_hw" --arg base "main" \
+                '{title: $title, head: $head, base: $base}')" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls")
+
+            pr_number=$(echo "$pr_response" | jq '.number')
+
+            if [[ "$pr_number" == "null" ]] || [[ -z "$pr_number" ]]; then
+              echo "No se pudo crear el PR."
+              exit 1
+            fi
+
+            echo "Nuevo PR creado: #$pr_number"
+            echo "pr_number=$pr_number" >> $GITHUB_ENV
+          fi
+
+      - name: Asignar PR al profesor
+        run: |
+          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"assignees\": [\"${{ github.actor }}\"]}" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ env.pr_number }}/assignees"
+
+      - name: Comentar en el Pull Request
+        run: |
+          summary_comment=$(cat summary_comment.txt)
+          comment_body=$(cat <<EOF
+          ### 📅 Corrección realizada el $current_date
+          👤 **Estudiante:** $student_name
+      
+          ${summary_comment}
+          EOF
+          )
+      
+          # Enviar el comentario usando jq para evitar problemas de formato
+          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg body "$comment_body" '{body: $body}')" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ env.pr_number }}/comments"
+
+      - name: Subir summary.json a S3 con nombre del estudiante
+        run: |
+          if [[ "${{ env.LATE_SUBMISSION }}" == "true" ]]; then
+            folder="results/late"
+          else
+            folder="results/on_time"
+          fi
+          aws s3 cp summary.json s3://cdr25/${{ secrets.HW_CODE }}/$folder/${{ env.student_name }}_summary.json
+
